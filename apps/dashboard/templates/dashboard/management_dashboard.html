@@ -1,0 +1,74 @@
+{% extends "layout/base_management.html" %}
+{% load static %}
+
+{% block title %}management_dashboard Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/management_dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Dashboard</h1>
+<p class="page-sub">System overview, alerts, and management access.</p>
+
+<section class="grid">
+
+  <div class="card card-pad col-4">
+    <div class="stat-row">
+      <div>
+        <div class="stat-label">Total Teams</div>
+        <div class="stat-value">24</div>
+      </div>
+      <span class="pill blue">Live</span>
+    </div>
+  </div>
+
+  <div class="card card-pad col-4">
+    <div class="stat-row">
+      <div>
+        <div class="stat-label">Departments</div>
+        <div class="stat-value">3</div>
+      </div>
+      <span class="pill blue">Org</span>
+    </div>
+  </div>
+
+  <div class="card card-pad col-4">
+    <div class="stat-row">
+      <div>
+        <div class="stat-label">Unread Messages</div>
+        <div class="stat-value">7</div>
+      </div>
+      <span class="pill blue">Alerts</span>
+    </div>
+  </div>
+
+  <div class="card card-pad col-12">
+    <div style="font-weight:950;">Quick Access</div>
+    <div class="page-sub" style="margin-top:4px;">Core modules for admin operations.</div>
+
+    <div class="action-strip">
+      <a class="action blue" href="#">
+        <p class="a-title">Teams</p>
+        <p class="a-sub">Search, view, edit teams</p>
+      </a>
+
+      <a class="action deep" href="#">
+        <p class="a-title">Organisation</p>
+        <p class="a-sub">Network view, structure</p>
+      </a>
+
+      <a class="action sky" href="#">
+        <p class="a-title">Reports</p>
+        <p class="a-sub">Export and analytics overview</p>
+      </a>
+
+      <a class="action sky" href="#">
+        <p class="a-title">Access Control</p>
+        <p class="a-sub">Quick Navigation to Access Management</p>
+      </a>
+    </div>
+  </div>
+
+</section>
+{% endblock %}

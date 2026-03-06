@@ -1,0 +1,73 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}User{% endblock %}</title>
+
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- Core/User Shell CSS (put your pasted CSS here as a file) -->
+  <link rel="stylesheet" href="{% static 'css/core/base.css' %}">
+
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+  <div class="overlay" id="overlay"></div>
+
+  <div class="app is-collapsed" id="app">
+    {% include "partials/user/sidebar.html" %}
+
+    <div class="main">
+      {% include "partials/user/topbar.html" %}
+
+      <main class="content">
+        {% block content %}{% endblock %}
+      </main>
+
+      {% include "partials/footer.html" %}
+    </div>
+  </div>
+
+  {% block extra_js %}
+  <script>
+    const app = document.getElementById('app');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+
+    const menuToggle = document.getElementById('menuToggle');
+    const notifToggle = document.getElementById('notificationToggle');
+    const notifDropdown = document.getElementById('notifDropdown');
+
+    function isMobile() {
+      return window.matchMedia('(max-width: 900px)').matches;
+    }
+
+    menuToggle.addEventListener('click', () => {
+      if (isMobile()){
+        sidebar.classList.toggle('active');
+        overlay.classList.toggle('active');
+      } else {
+        app.classList.toggle('is-collapsed');
+      }
+    });
+
+    overlay.addEventListener('click', () => {
+      sidebar.classList.remove('active');
+      overlay.classList.remove('active');
+      notifDropdown.classList.remove('active');
+    });
+
+    notifToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      notifDropdown.classList.toggle('active');
+    });
+
+    document.addEventListener('click', () => notifDropdown.classList.remove('active'));
+  </script>
+  {% endblock %}
+</body>
+</html>

@@ -1,0 +1,54 @@
+{% load static %}
+<header class="topbar">
+  <div class="top-left">
+    <button class="icon-pill" id="menuToggle" aria-label="Toggle menu">☰</button>
+  </div>
+
+  <div class="search">
+    <span>🔎</span>
+    <input type="text" placeholder="Search teams, departments, managers…">
+  </div>
+
+  <div class="top-right">
+
+    <!-- Notifications -->
+    <div class="notification">
+      <div class="icon-pill" id="notificationToggle" aria-label="Notifications">
+        🔔 <span class="notif-badge">5</span>
+      </div>
+
+      <div class="notif-dropdown" id="notifDropdown">
+        <div class="notif-header">Notifications</div>
+        <div class="notif-item">
+          <strong>Audit event</strong>
+          <p>Dependency updated · 10 mins ago</p>
+        </div>
+        <div class="notif-item">
+          <strong>New message</strong>
+          <p>Incident Response · 22 mins ago</p>
+        </div>
+        <div class="notif-item">
+          <strong>Meeting reminder</strong>
+          <p>Ops Weekly · Today 14:00</p>
+        </div>
+        <a href="#" class="view-all">View all notifications</a>
+      </div>
+    </div>
+
+    <!-- Profile -->
+    <div class="profile-dropdown">
+      <div class="profile-link">
+        <img class="avatar" src="{% static 'img/avatar.jpg' %}" alt="Admin avatar">
+        <span class="profile-status" title="Online"></span>
+        <span>Admin User</span>
+        <span class="arrow">▾</span>
+      </div>
+
+      <div class="dropdown-menu">
+        <a href="../dashboards/update-info.html">Update Profile</a>
+        <a href="../accounts/admin_login.html">Log Out</a>
+      </div>
+    </div>
+
+  </div>
+</header>

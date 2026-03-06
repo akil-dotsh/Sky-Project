@@ -1,0 +1,36 @@
+{% load static %}
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-logo">
+      <img src="{% static 'img/sky-uk-logo.jpg' %}" alt="Sky logo">
+    </div>
+    <div>
+      <div class="brand-title">Engineering Portal</div>
+      <div class="brand-sub">Admin / Department Head</div>
+    </div>
+  </div>
+
+  <!-- ADMIN MENU (unchanged) -->
+  <nav class="nav">
+    <a href="../dashboards/dashboard_admin.html"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>
+    <a href="#"><i class="bi bi-people"></i><span>Team Management</span></a>
+    <a href="#"><i class="bi bi-diagram-3"></i><span>Organisation Map</span></a>
+    <a href="#"><i class="bi bi-link-45deg"></i><span>Dependency Management</span></a>
+
+    <div class="section-label">Governance</div>
+    <a href="#"><i class="bi bi-shield-lock"></i><span>User & Role Management</span></a>
+    <a href="../reports/admin-reports.html"><i class="bi bi-graph-up-arrow"></i><span>Reports & Analytics</span></a>
+    <a href="#"><i class="bi bi-clipboard-check"></i><span>Audit Trail</span></a>
+
+    <div class="section-label">Communication</div>
+    <a href="#"><i class="bi bi-chat-dots"></i><span>Messaging</span></a>
+    <a href="#"><i class="bi bi-calendar2-week"></i><span>Schedule</span></a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span class="role-chip">Admin</span>
+    <span class="status-chip status-online">
+      <span class="status-dot"></span> Online
+    </span>
+  </div>
+</aside>

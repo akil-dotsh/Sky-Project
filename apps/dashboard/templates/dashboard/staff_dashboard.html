@@ -1,0 +1,75 @@
+{% extends "layout/base_staff.html" %}
+{% load static %}
+
+{% block title %}User Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/staff_dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Welcome, John!</h1>
+<p class="page-sub">Find teams quickly and stay updated with your organisation.</p>
+
+<section class="grid">
+  <div class="card card-pad col-4">
+    <div class="stat-row">
+      <div>
+        <div class="stat-label">Teams in Directory</div>
+        <div class="stat-value">24</div>
+      </div>
+      <span class="pill blue">Browse</span>
+    </div>
+  </div>
+
+  <div class="card card-pad col-4">
+    <div class="stat-row">
+      <div>
+        <div class="stat-label">Unread Messages</div>
+        <div class="stat-value">3</div>
+      </div>
+      <span class="pill blue">Inbox</span>
+    </div>
+  </div>
+
+  <div class="card card-pad col-4">
+    <div class="stat-row">
+      <div>
+        <div class="stat-label">Upcoming Meetings</div>
+        <div class="stat-value">2</div>
+      </div>
+      <span class="pill green">Today</span>
+    </div>
+  </div>
+
+  <div class="card card-pad col-12">
+    <div style="font-weight:950;">Quick Actions</div>
+    <div class="page-sub" style="margin-top:4px;">Fast navigation to common tasks.</div>
+
+    <div class="action-strip">
+      <a class="action blue" href="#">
+        <p class="a-title">Find a Team</p>
+        <p class="a-sub">Search and filter through all the teams</p>
+      </a>
+
+      <a class="action deep" href="#">
+        <p class="a-title">View Map</p>
+        <p class="a-sub">Explore team relationships</p>
+      </a>
+
+      <a class="action sky" href="#">
+        <p class="a-title">Contact Teams</p>
+        <p class="a-sub">Quick access to team communication</p>
+      </a>
+
+      <a class="action reports" href="#">
+        <p class="a-title">
+          <i class="bi bi-file-earmark-text"></i>
+          View Reports
+        </p>
+        <p class="a-sub">Open admin-generated reports shared with you</p>
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

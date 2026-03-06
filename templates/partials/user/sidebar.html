@@ -1,0 +1,29 @@
+{% load static %}
+<aside class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="brand-logo">
+      <img src="{% static 'img/sky-uk-logo.jpg' %}" alt="Sky logo">
+    </div>
+    <div>
+      <div class="brand-title">Open Sky</div>
+      <div class="brand-sub">Engineering Portal</div>
+    </div>
+  </div>
+
+  <!-- USER MENU (kept exactly, only paths can be updated later) -->
+  <nav class="nav">
+    <a href="dashboard_user.html"><i class="bi bi-speedometer2"></i>Dashboard</a>
+    <a href="#"><i class="bi bi-people"></i>Teams</a>
+    <a href="#"><i class="bi bi-diagram-3"></i>Organisation</a>
+    <a href="#"><i class="bi bi-chat-dots"></i>Messages</a>
+    <a href="#"><i class="bi bi-calendar2-week"></i>Schedule</a>
+    <a href="../reports/user-reports.html"><i class="bi bi-bar-chart-line"></i>Reports</a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span class="role-chip">User</span>
+    <span class="status-chip status-online">
+      <span class="status-dot"></span> Online
+    </span>
+  </div>
+</aside>

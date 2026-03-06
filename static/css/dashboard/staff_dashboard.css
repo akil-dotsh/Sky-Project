@@ -1,0 +1,107 @@
+/* Admin dashboard page-only styles (grid/cards/actions) */
+
+/* Page headings */
+.page-title{
+  font-size: 28px;
+  font-weight: 950;
+  margin: 0;
+}
+.page-sub{
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Grid layout */
+.grid{
+  margin-top: 16px;
+  display:grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+}
+
+.col-4{ grid-column: span 4; }
+.col-12{ grid-column: span 12; }
+
+@media (max-width: 1000px){
+  .col-4{ grid-column: span 12; }
+}
+
+/* Cards */
+.card{
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+.card-pad{ padding: 16px; }
+
+.stat-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap: 10px;
+}
+.stat-label{ color: var(--muted); font-size: 13px; }
+.stat-value{ font-size: 32px; font-weight: 950; margin-top: 6px; }
+
+/* Pills */
+.pill{
+  font-size: 12px;
+  font-weight: 900;
+  border-radius: 999px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  background: #fff;
+}
+.pill.blue{ background: var(--soft); border-color: #bfdbfe; color: #1e40af; }
+.pill.green{ background:#ecfdf5; border-color:#a7f3d0; color:#065f46; }
+
+/* Quick Access actions */
+.action-strip{
+  display:grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.action{
+  grid-column: span 4;
+  border-radius: 18px;
+  padding: 18px;
+  color:#fff;
+  border: 1px solid rgba(255,255,255,0.10);
+  box-shadow: var(--shadow);
+  text-decoration:none;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.action:hover{
+  transform: translateY(-2px);
+  box-shadow: var(--shadowHover);
+}
+
+.action .a-title{
+  font-size: 20px;
+  font-weight: 950;
+  margin: 0;
+}
+.action .a-sub{
+  margin: 8px 0 0;
+  opacity: 0.9;
+  font-size: 14px;
+}
+
+.action.blue{ background: linear-gradient(120deg, #2b59d6, #1aa3d9); }
+.action.deep{ background: linear-gradient(120deg, #1e4fa8, #2b59d6); }
+.action.sky{ background: linear-gradient(120deg, #1e4fa8, #67d4ff); }
+
+/* Responsive: stack actions */
+@media (max-width: 1000px){
+  .action{ grid-column: span 12; }
+}
+
+/* Desktop: 4 per row */
+@media (min-width: 1001px){
+  .action-strip .action{ grid-column: span 3; }
+}
