@@ -1,5 +1,10 @@
 # SKY Project
 
+## 🚧 Work in Progress
+
+This project is currently under development and is not yet complete.
+The repository is being used to document progress and ongoing work.
+
 ## Overview
 SKY Project is a full-stack web application developed by a five-member team using Django and SQLite. The system includes comprehensive database design, system architecture planning, and a responsive user interface.
 
