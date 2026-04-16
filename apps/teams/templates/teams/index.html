@@ -1,0 +1,43 @@
+{% extends "layout/base_staff.html" %}
+{% load static %}
+
+{% block title %}Teams Management{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/teams/index.css' %}">
+{% endblock %}
+
+{% block content %}
+<h1 class="page-title">Team Directory</h1>
+
+<section class="grid">
+    {% for team in teams %}
+    <div class="card card-pad col-4" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+            <div class="stat-label"
+                style="color: var(--primary); font-weight: bold; font-size: 0.75rem; text-transform: uppercase;">
+                {{ team.department }}
+            </div>
+
+            <h3 style="margin-top: 10px;">{{ team.name }}</h3>
+
+            <p style="font-size: 0.9rem; color: var(--text);">
+                <strong>Lead:</strong> {{ team.leader }}
+            </p>
+
+            <p style="font-size: 0.8rem; color: var(--muted);">
+                <em>{{ team.tech_stack|truncatechars:80 }}</em>
+            </p>
+        </div>
+
+        <a href="{% url 'team_detail' team.slug %}" class="action blue" style="text-align: center; margin-top: 15px;">
+            View Team Details
+        </a>
+    </div>
+    {% empty %}
+    <div class="card card-pad col-12">
+        <p>No teams found in the registry. Check your import script!</p>
+    </div>
+    {% endfor %}
+</section>
+{% endblock %}
