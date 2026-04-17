@@ -1,0 +1,77 @@
+{% extends "layout/base_staff.html" %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <a href="{% url 'teams_list' %}"
+        style="text-decoration: none; color: var(--muted); font-weight: 500; display: flex; align-items: center; gap: 5px;">
+        <span>&larr;</span> Team Directory
+    </a>
+</div>
+
+<div class="card card-pad" style="margin-bottom: 20px; border-bottom: 4px solid var(--primary);">
+    <h1 style="margin: 0;">{{ team.name }}</h1>
+    <p style="color: var(--muted); margin-top: 5px;">
+        <strong>Manager:</strong> {{ team.dept_head }} | <strong>Lead:</strong> {{ team.leader }}
+    </p>
+</div>
+
+<div class="tabs-container" style="display: flex; gap: 20px; margin-bottom: 20px; border-bottom: 1px solid #ddd;">
+    <button class="tab-link active" onclick="openTab(event, 'overview')"
+        style="padding: 10px 20px; border: none; background: none; cursor: pointer; border-bottom: 2px solid var(--primary);">Overview</button>
+    <button class="tab-link" onclick="openTab(event, 'members')"
+        style="padding: 10px 20px; border: none; background: none; cursor: pointer;">Members</button>
+    <button class="tab-link" onclick="openTab(event, 'repos')"
+        style="padding: 10px 20px; border: none; background: none; cursor: pointer;">Repositories</button>
+    <button class="tab-link" onclick="openTab(event, 'deps')"
+        style="padding: 10px 20px; border: none; background: none; cursor: pointer;">Dependencies</button>
+</div>
+
+<div id="overview" class="tab-content" style="display: block;">
+    <div class="card card-pad">
+        <h3>Focus Areas</h3>
+        <p>{{ team.focus_areas }}</p>
+        <h3>Tech Stack</h3>
+        <code style="background: #f4f4f4; padding: 10px; display: block;">{{ team.tech_stack }}</code>
+    </div>
+</div>
+
+<div id="members" class="tab-content" style="display: none;">
+    <div class="card card-pad">
+        <h3>Team Members</h3>
+        <p>List of developers assigned to {{ team.name }} will appear here.</p>
+    </div>
+</div>
+
+<div id="repos" class="tab-content" style="display: none;">
+    <div class="card card-pad">
+        <h3>Jira & Git</h3>
+        <p><strong>Jira Project:</strong> {{ team.jira_project }}</p>
+    </div>
+</div>
+
+<div id="deps" class="tab-content" style="display: none;">
+    <div class="card card-pad">
+        <h3>Upstream/Downstream</h3>
+        <p>External dependencies for this unit.</p>
+    </div>
+</div>
+
+<script>
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        // Hide all contents
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+        // Remove "active" class from buttons
+        tablinks = document.getElementsByClassName("tab-link");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].style.borderBottom = "none";
+        }
+        // Show the current tab and add an active style
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.style.borderBottom = "2px solid var(--primary)";
+    }
+</script>
+{% endblock %}
