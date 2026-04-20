@@ -1,0 +1,145 @@
+/* ===== Background section ===== */
+.auth-hero {
+  min-height: 100vh;
+  background: linear-gradient(120deg, #1f4fbf, #00a3d7);
+  display: flex;
+  align-items: center;
+}
+
+/* ===== Card container ===== */
+.auth-card {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 30px;
+  border-radius: 30px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.auth-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.25);
+}
+
+/* ===== Title styles ===== */
+.auth-logo {
+  margin-bottom: 30px;
+}
+
+.login-logo {
+  width: 70px;
+  height: auto;
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.portal-title {
+  font-weight: 800;
+  font-size: 26px;
+  margin-bottom: 5px;
+  color: #1f4fbf;
+}
+
+.portal-subtitle {
+  font-size: 14px;
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+.auth-title {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.auth-subtitle {
+  font-size: 14px;
+  color: #6c757d;
+  margin-bottom: 25px;
+}
+
+/* ===== Form area ===== */
+.auth-form {
+  margin-top: 20px;
+  text-align: left;
+}
+
+/* Inputs */
+.form-control {
+  border-radius: 12px;
+  border: 1px solid #dee2e6;
+  padding: 10px 14px;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.form-control:hover {
+  border-color: #b6c3e0;
+}
+
+.form-control:focus {
+  border-color: #1f4fbf;
+  box-shadow: 0 0 0 0.2rem rgba(31, 79, 191, 0.2);
+}
+
+/* ===== Remember + Forgot row ===== */
+.auth-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: -6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #495057;
+}
+
+.remember input {
+  width: 16px;
+  height: 16px;
+}
+
+/* ===== Button section ===== */
+.auth-action {
+  margin-top: 10px;
+}
+
+.auth-action .btn {
+  border-radius: 14px;
+  padding: 12px 16px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.auth-action .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* ===== Links section ===== */
+.auth-links {
+  margin-top: 16px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.link-soft {
+  text-decoration: none;
+  color: #1f4fbf;
+  font-weight: 600;
+  transition: color 0.25s ease;
+}
+
+.link-soft:hover {
+  color: #0d2c75;
+  text-decoration: underline;
+}
+
+.dot-sep {
+  margin: 0 8px;
+  color: #6c757d;
+}
