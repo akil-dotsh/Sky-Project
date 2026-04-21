@@ -1,9 +1,18 @@
+from email.policy import default
+from django.conf import settings
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import send_mail
 from django.db import transaction
 from django.shortcuts import render,redirect
 from django.contrib.auth import authenticate, login
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.contrib.auth import views as auth_views
 
-from apps.authentication.form import LoginForm, RegistrationForm
+from apps.authentication.form import LoginForm, RegistrationForm, ForgotPasswordForm
 from apps.authentication.models import UserProfile
 
 
@@ -113,3 +122,62 @@ def admin_login(request):
 def dev_login(request):
     return user_login(request,'authentication/dev_leader_login.html')
 
+
+def forgot_password(request):
+    form = ForgotPasswordForm()
+
+    if request.method == 'POST':
+        form = ForgotPasswordForm(request.POST)
+
+        if form.is_valid():
+            email = form.cleaned_data['email']
+
+            try:
+                user_obj = User.objects.get(email__iexact=email)
+            except User.DoesNotExist:
+                user_obj = None
+
+            if user_obj:
+                if not user_obj.is_active:
+                    return render(request, 'authentication/forgot_password.html', {
+                        'form': form,
+                        'error': 'Your account is inactive. Please contact your manager to activate your account.'
+                    })
+
+                current_site = get_current_site(request)
+
+                subject = render_to_string(
+                    'authentication/password_reset_subject.txt'
+                ).strip()
+
+                message = render_to_string(
+                    'authentication/password_reset_email.html',
+                    {
+                        'user': user_obj,
+                        'domain': current_site.domain,
+                        'uid': urlsafe_base64_encode(force_bytes(user_obj.pk)),
+                        'token': default_token_generator.make_token(user_obj),
+                        'protocol': 'https' if request.is_secure() else 'http',
+                    },
+                )
+                #Debugging
+                print("EMAIL_HOST_USER =", settings.EMAIL_HOST_USER)
+                print("DEFAULT_FROM_EMAIL =", settings.DEFAULT_FROM_EMAIL)
+                print("user_obj.email =", user_obj.email)
+                send_mail(
+                    subject=subject,
+                    message=message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user_obj.email],
+                    fail_silently=False,
+                )
+
+                return redirect('forgot_password_sent')
+
+            else:
+                return render(request, 'authentication/forgot_password.html', {
+                    'form': form,
+                    'error': 'No account found with this email address.'
+                })
+
+    return render(request, 'authentication/forgot_password.html', {'form': form})

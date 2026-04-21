@@ -106,3 +106,16 @@ class LoginForm(forms.Form):
         email = cleaned_data.get('email')
         password = cleaned_data.get('password')
 
+
+class ForgotPasswordForm(forms.Form):
+    #form to capture the user's email address
+    email = forms.EmailField(widget=forms.EmailInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'user@sky.com',
+        'maxlength': 100,
+        'required': True
+    }))
+
+    def clean(self):
+        cleaned_data = super(ForgotPasswordForm, self).clean()
+        email = cleaned_data.get('email')

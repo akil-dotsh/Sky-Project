@@ -6,6 +6,10 @@ __pycache__/
 .venv/
 venv/
 
+# Environment variables
+.env
+*.env
+
 # Django
 db.sqlite3
 *.log
