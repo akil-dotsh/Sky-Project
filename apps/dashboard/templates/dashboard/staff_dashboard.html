@@ -1,14 +1,14 @@
-{% extends "layout/base_staff.html" %}
+{% extends "core/base_staff.html" %}
 {% load static %}
 
-{% block title %}User Dashboard{% endblock %}
+{% block title %}Staff Dashboard{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/dashboard/staff_dashboard.css' %}">
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
 {% endblock %}
 
 {% block content %}
-<h1 class="page-title">Welcome, John!</h1>
+<h1 class="page-title">Welcome, {{ user.first_name }} </h1>
 <p class="page-sub">Find teams quickly and stay updated with your organisation.</p>
 
 <section class="grid">
