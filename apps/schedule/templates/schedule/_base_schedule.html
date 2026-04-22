@@ -1,0 +1,221 @@
+{% extends "layout/base_staff.html" %}
+{% load static %}
+
+{% block title %}Schedule{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/schedule/schedule.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="sched-page">
+
+  <header class="sched-hero">
+    <div class="sched-hero-left">
+      <div class="sched-hero-icon"><i class="bi bi-calendar2-week"></i></div>
+      <div>
+        <h1 class="sched-hero-title">Open SKY</h1>
+        <p class="sched-hero-sub">Schedule &amp; Meetings Management</p>
+      </div>
+    </div>
+    <div class="sched-hero-right">
+      <button class="sched-icon-btn" type="button" aria-label="Notifications"><i class="bi bi-bell"></i></button>
+      <button class="sched-icon-btn" type="button" aria-label="People"><i class="bi bi-people"></i></button>
+      <button class="sched-cta" type="button" id="openScheduleModal">
+        <i class="bi bi-plus-lg"></i> Schedule Meeting
+      </button>
+    </div>
+  </header>
+
+  <div class="sched-grid">
+    <div class="sched-main">
+      <nav class="sched-tabs" role="tablist">
+        <a href="{% url 'schedule:monthly' %}" class="sched-tab {% if active_view == 'monthly' %}active{% endif %}">Monthly View</a>
+        <a href="{% url 'schedule:weekly' %}" class="sched-tab {% if active_view == 'weekly' %}active{% endif %}">Weekly View</a>
+        <a href="{% url 'schedule:agenda' %}" class="sched-tab {% if active_view == 'agenda' %}active{% endif %}">Agenda</a>
+      </nav>
+
+      {% if messages %}
+      <div class="sched-messages">
+        {% for m in messages %}
+          <div class="sched-alert sched-alert-{{ m.tags }}">{{ m }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% block schedule_body %}{% endblock %}
+    </div>
+
+    <aside class="sched-side">
+      <div class="sched-side-head">
+        <div class="sched-side-icon"><i class="bi bi-graph-up-arrow"></i></div>
+        <div>
+          <div class="sched-side-title">Upcoming Schedule</div>
+          <div class="sched-side-sub">Your next meetings at a glance</div>
+        </div>
+      </div>
+
+      <div class="sched-side-body">
+        {% if upcoming_meetings %}
+          <ul class="sched-upcoming-list">
+            {% for m in upcoming_meetings %}
+            <li class="sched-upcoming-item">
+              <div class="sched-upcoming-title">{{ m.title }}</div>
+              <div class="sched-upcoming-meta">
+                <i class="bi bi-calendar-event"></i> {{ m.date|date:"D, M j" }}
+                <span class="dot"></span>
+                <i class="bi bi-clock"></i> {{ m.time|time:"H:i" }}
+              </div>
+              <div class="sched-upcoming-platform">{{ m.platform }}</div>
+            </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="sched-side-empty">
+            <div class="sched-side-empty-icon"><i class="bi bi-calendar-event"></i></div>
+            <div class="sched-side-empty-title">No upcoming meetings</div>
+            <div class="sched-side-empty-sub">Your schedule is clear <span class="spark">&#10024;</span></div>
+          </div>
+        {% endif %}
+      </div>
+    </aside>
+  </div>
+</div>
+
+{# ===== Schedule Meeting Modal ===== #}
+<div class="sched-modal-backdrop {% if open_modal %}active{% endif %}" id="schedModalBackdrop"></div>
+<div class="sched-modal {% if open_modal %}active{% endif %}" id="schedModal" role="dialog" aria-modal="true">
+  <div class="sched-modal-card">
+    <div class="sched-modal-header">
+      <div class="sched-modal-header-left">
+        <div class="sched-modal-header-icon"><i class="bi bi-calendar2-plus"></i></div>
+        <div>
+          <h2 class="sched-modal-title">
+            {% if editing %}Edit Meeting{% else %}Schedule New Meeting{% endif %}
+          </h2>
+          <p class="sched-modal-sub">
+            {% if editing %}Update details for this meeting{% else %}Create a new meeting with your team{% endif %}
+          </p>
+        </div>
+      </div>
+      <button type="button" class="sched-modal-close" id="closeSchedModal" aria-label="Close">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <form method="post" class="sched-modal-form"
+          action="{% if editing %}{% url 'schedule:edit' meeting.pk %}{% else %}{% url 'schedule:create' %}{% endif %}">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+
+      <div class="sched-field">
+        <label class="sched-field-label">
+          <span class="sched-field-pill blue"><i class="bi bi-chat-dots"></i></span>
+          Meeting Title <span class="req">*</span>
+        </label>
+        {{ form.title }}
+        {% if form.title.errors %}<p class="sched-error">{{ form.title.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="sched-field-row">
+        <div class="sched-field">
+          <label class="sched-field-label">
+            <span class="sched-field-pill cyan"><i class="bi bi-calendar"></i></span>
+            Date <span class="req">*</span>
+          </label>
+          {{ form.date }}
+          {% if form.date.errors %}<p class="sched-error">{{ form.date.errors.0 }}</p>{% endif %}
+        </div>
+        <div class="sched-field">
+          <label class="sched-field-label">
+            <span class="sched-field-pill cyan"><i class="bi bi-clock"></i></span>
+            Time <span class="req">*</span>
+          </label>
+          {{ form.time }}
+          {% if form.time.errors %}<p class="sched-error">{{ form.time.errors.0 }}</p>{% endif %}
+        </div>
+      </div>
+
+      <div class="sched-field">
+        <label class="sched-field-label">
+          <span class="sched-field-pill green"><i class="bi bi-display"></i></span>
+          Platform <span class="req">*</span>
+        </label>
+        {{ form.platform }}
+        {% if form.platform.errors %}<p class="sched-error">{{ form.platform.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="sched-field">
+        <label class="sched-field-label">
+          <span class="sched-field-pill orange"><i class="bi bi-people"></i></span>
+          Team <span class="opt">(Optional)</span>
+        </label>
+        {{ form.team }}
+      </div>
+
+      <div class="sched-field">
+        <label class="sched-field-label">
+          <span class="sched-field-pill blue"><i class="bi bi-stars"></i></span>
+          Meeting Agenda / Notes <span class="opt">(Optional)</span>
+        </label>
+        {{ form.agenda }}
+      </div>
+
+      <div class="sched-modal-actions">
+        <button type="button" class="sched-btn sched-btn-ghost" id="cancelSchedModal">Cancel</button>
+        <button type="submit" class="sched-btn sched-btn-primary">
+          <i class="bi bi-stars"></i>
+          {% if editing %}Save Changes{% else %}Schedule Meeting{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% block schedule_extra %}{% endblock %}
+{% endblock %}
+
+{% block extra_js %}
+{{ block.super }}
+<script>
+  (function() {
+    const backdrop = document.getElementById('schedModalBackdrop');
+    const modal = document.getElementById('schedModal');
+    const openBtn = document.getElementById('openScheduleModal');
+    const closeBtn = document.getElementById('closeSchedModal');
+    const cancelBtn = document.getElementById('cancelSchedModal');
+
+    function open() {
+      backdrop.classList.add('active');
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    function close() {
+      backdrop.classList.remove('active');
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+      const url = new URL(window.location);
+      if (url.searchParams.has('edit')) {
+        url.searchParams.delete('edit');
+        window.history.replaceState({}, '', url);
+      }
+    }
+
+    if (openBtn) openBtn.addEventListener('click', open);
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    if (cancelBtn) cancelBtn.addEventListener('click', close);
+    if (backdrop) backdrop.addEventListener('click', close);
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && modal.classList.contains('active')) close();
+    });
+
+    // Edit buttons open modal pre-populated via server redirect — but also support in-place open
+    document.querySelectorAll('[data-edit-meeting]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        // Navigation handled by link; no-op.
+      });
+    });
+  })();
+</script>
+{% endblock %}

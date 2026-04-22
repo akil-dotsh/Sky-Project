@@ -13,7 +13,7 @@ def run_import():
 
     file_path = os.path.join(base_dir, 'teams.csv')
     
-    with open(file_path, mode='r', encoding='utf-8') as f:
+    with open(file_path, mode='r', encoding='cp1252') as f:
         reader = csv.DictReader(f)
         count = 0
         for row in reader:
