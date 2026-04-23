@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from apps.authentication.models import UserProfile
 
-
+from apps.authentication.models import UserProfile
 @login_required
 def update_info(request):
     user = request.user
