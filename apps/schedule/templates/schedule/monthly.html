@@ -26,9 +26,9 @@
               {% if day.meetings %}
                 <div class="sched-month-events">
                   {% for m in day.meetings|slice:":3" %}
-                    <a href="{% url 'schedule:agenda' %}#m-{{ m.pk }}" class="sched-month-event" title="{{ m.title }} — {{ m.time|time:'H:i' }}">
+                    <a href="{% url 'schedule:agenda' %}#m-{{ m.meeting_id }}" class="sched-month-event" title="{{ m.title }} — {{ m.start_datetime|date:'H:i' }}">
                       <span class="sched-month-event-dot"></span>
-                      <span class="sched-month-event-title">{{ m.time|time:"H:i" }} · {{ m.title }}</span>
+                      <span class="sched-month-event-title">{{ m.start_datetime|date:"H:i" }} · {{ m.title }}</span>
                     </a>
                   {% endfor %}
                   {% if day.meetings|length > 3 %}
