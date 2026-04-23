@@ -84,6 +84,22 @@
           <p class="sched-agenda-notes-body">{{ m.agenda|linebreaksbr }}</p>
         </div>
 
+        {% with parts=m.participants.all %}
+          {% if parts %}
+            <div class="sched-agenda-participants">
+              <div class="sched-agenda-participants-label"><i class="bi bi-people"></i> Participants</div>
+              <div class="sched-agenda-participants-list">
+                {% for p in parts %}
+                  <span class="sched-participant-chip status-{{ p.join_status|lower|cut:' ' }}">
+                    {{ p.user.get_full_name|default:p.user.username }}
+                    <span class="sched-participant-status">{{ p.join_status }}</span>
+                  </span>
+                {% endfor %}
+              </div>
+            </div>
+          {% endif %}
+        {% endwith %}
+
         <div class="sched-agenda-footer">
           <i class="bi bi-person"></i>
           Organised by

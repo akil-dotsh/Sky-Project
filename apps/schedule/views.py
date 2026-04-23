@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.utils.dateparse import parse_date
 
 from .forms import MeetingForm
-from .models import Meeting
+from .models import Meeting, MeetingParticipant
 
 
 def _parse_focus_date(request):
@@ -147,7 +147,7 @@ def weekly_view(request):
         rows.append({'hour': hour, 'cells': cells})
 
     ctx.update({
-        'week_label': f"{start.strftime('%B %-d')} - {end.strftime('%B %-d, %Y')}",
+        'week_label': f"{start.strftime('%B')} {start.day} - {end.strftime('%B')} {end.day}, {end.year}",
         'days': [{'date': d, 'label': d.strftime('%a').upper(), 'is_today': d == ctx['today']} for d in days],
         'rows': rows,
         'prev_date': prev_date,
@@ -184,6 +184,26 @@ def _agenda_error_context(form, extra=None):
     return ctx
 
 
+def _seed_participants(meeting):
+    """Seed Meeting_Participant rows for a newly created meeting.
+
+    Always adds the organiser (Accepted). For Individual meetings also adds
+    the receiver (Invited). Team meetings leave team-wide expansion for the
+    team-management flow.
+    """
+    now = timezone.now()
+    rows = [(meeting.organiser_id, 'Accepted')]
+    if meeting.meeting_type == 'Individual' and meeting.receiver_id:
+        rows.append((meeting.receiver_id, 'Invited'))
+    for user_id, status in rows:
+        MeetingParticipant.objects.create(
+            user_id=user_id,
+            meeting=meeting,
+            date=now,
+            join_status=status,
+        )
+
+
 def create_meeting(request):
     organiser = _resolve_organiser(request)
     if request.method == 'POST':
@@ -195,6 +215,7 @@ def create_meeting(request):
                 return render(request, 'schedule/agenda.html', _agenda_error_context(form))
             meeting.organiser = organiser
             meeting.save()
+            _seed_participants(meeting)
             messages.success(request, f'Meeting "{meeting.title}" scheduled.')
             return redirect(request.POST.get('next') or 'schedule:agenda')
         messages.error(request, 'Please fix the highlighted errors and try again.')
