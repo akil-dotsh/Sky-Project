@@ -1,0 +1,46 @@
+{% extends "schedule/_base_schedule.html" %}
+
+{% block schedule_body %}
+<section class="sched-card">
+  <header class="sched-card-head">
+    <h2 class="sched-card-title">{{ month_label }}</h2>
+    <div class="sched-nav">
+      <a class="sched-nav-btn" href="?date={{ prev_date|date:'Y-m-d' }}" aria-label="Previous month"><i class="bi bi-chevron-left"></i></a>
+      <a class="sched-nav-btn" href="?date={{ next_date|date:'Y-m-d' }}" aria-label="Next month"><i class="bi bi-chevron-right"></i></a>
+    </div>
+  </header>
+
+  <div class="sched-month">
+    <div class="sched-month-head">
+      {% for label in weekday_labels %}
+        <div class="sched-month-head-cell">{{ label }}</div>
+      {% endfor %}
+    </div>
+
+    <div class="sched-month-body">
+      {% for week in weeks %}
+        <div class="sched-month-row">
+          {% for day in week %}
+            <div class="sched-month-cell {% if not day.in_month %}muted{% endif %} {% if day.is_today %}today{% endif %}">
+              <div class="sched-month-daynum {% if day.is_today %}today-pill{% endif %}">{{ day.date.day }}</div>
+              {% if day.meetings %}
+                <div class="sched-month-events">
+                  {% for m in day.meetings|slice:":3" %}
+                    <a href="{% url 'schedule:agenda' %}#m-{{ m.pk }}" class="sched-month-event" title="{{ m.title }} — {{ m.time|time:'H:i' }}">
+                      <span class="sched-month-event-dot"></span>
+                      <span class="sched-month-event-title">{{ m.time|time:"H:i" }} · {{ m.title }}</span>
+                    </a>
+                  {% endfor %}
+                  {% if day.meetings|length > 3 %}
+                    <div class="sched-month-more">+{{ day.meetings|length|add:"-3" }} more</div>
+                  {% endif %}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

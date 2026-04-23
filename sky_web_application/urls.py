@@ -22,6 +22,7 @@ urlpatterns = [
     path('login/', include('apps.authentication.urls')),
     path("", include("apps.dashboard.urls")),
     path('teams/', include('apps.teams.urls')),
-    path('core/',include('apps.core.urls'))
+    path('schedule/', include('apps.schedule.urls')),
+    path('core/', include('apps.core.urls')),
 
 ]

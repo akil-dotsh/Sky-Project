@@ -1,0 +1,43 @@
+{% extends "schedule/_base_schedule.html" %}
+
+{% block schedule_body %}
+<section class="sched-card">
+  <header class="sched-card-head">
+    <h2 class="sched-card-title">{{ week_label }}</h2>
+    <div class="sched-nav">
+      <a class="sched-nav-btn" href="?date={{ prev_date|date:'Y-m-d' }}" aria-label="Previous week"><i class="bi bi-chevron-left"></i></a>
+      <a class="sched-nav-btn" href="?date={{ next_date|date:'Y-m-d' }}" aria-label="Next week"><i class="bi bi-chevron-right"></i></a>
+    </div>
+  </header>
+
+  <div class="sched-week">
+    <div class="sched-week-head">
+      <div class="sched-week-head-cell sched-week-time-col">Time</div>
+      {% for d in days %}
+        <div class="sched-week-head-cell {% if d.is_today %}today{% endif %}">
+          <div class="sched-week-head-label">{{ d.label }}</div>
+          <div class="sched-week-head-num {% if d.is_today %}today-pill{% endif %}">{{ d.date.day }}</div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="sched-week-body">
+      {% for row in rows %}
+        <div class="sched-week-row">
+          <div class="sched-week-cell sched-week-time-col">{{ row.hour }}</div>
+          {% for cell in row.cells %}
+            <div class="sched-week-cell {% if cell.is_today %}today-col{% endif %}">
+              {% for m in cell.meetings %}
+                <a href="{% url 'schedule:agenda' %}#m-{{ m.pk }}" class="sched-week-event" title="{{ m.title }}">
+                  <span class="sched-week-event-title">{{ m.title }}</span>
+                  <span class="sched-week-event-meta">{{ m.platform }}</span>
+                </a>
+              {% endfor %}
+            </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

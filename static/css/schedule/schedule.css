@@ -1,0 +1,1091 @@
+/* ============================================================
+   Schedule page — matches high-fidelity mockup
+   Soft blue gradient background, glassy cards, cyan CTA.
+   ============================================================ */
+
+:root {
+  --sch-bg-a: #e8f2fb;
+  --sch-bg-b: #d3ecff;
+  --sch-card: rgba(255, 255, 255, 0.72);
+  --sch-card-solid: #ffffff;
+  --sch-border: rgba(37, 99, 235, 0.12);
+  --sch-text: #0f2746;
+  --sch-text-soft: #475775;
+  --sch-muted: #8a9ab2;
+  --sch-primary: #1e8dff;
+  --sch-primary-dark: #1a6edd;
+  --sch-accent: #22c3ea;
+  --sch-accent-2: #4fb3ff;
+  --sch-gradient: linear-gradient(135deg, #1e8dff 0%, #22c3ea 100%);
+  --sch-today: #1e8dff;
+  --sch-pill-blue: #e8f3ff;
+  --sch-pill-violet: #efebff;
+  --sch-pill-cyan: #e4f8ff;
+  --sch-pill-green: #e3f8ef;
+  --sch-pill-orange: #fff0e2;
+  --sch-danger: #ef4444;
+  --sch-shadow-sm: 0 4px 12px rgba(30, 141, 255, 0.08);
+  --sch-shadow-md: 0 10px 28px rgba(30, 141, 255, 0.12);
+  --sch-shadow-lg: 0 24px 48px rgba(30, 141, 255, 0.18);
+}
+
+.content:has(.sched-page) {
+  background: linear-gradient(140deg, var(--sch-bg-a) 0%, var(--sch-bg-b) 55%, #e0f2ff 100%);
+  padding: 24px 28px 48px;
+  min-height: calc(100vh - 80px);
+}
+
+.sched-page {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--sch-text);
+  max-width: 1480px;
+  margin: 0 auto;
+}
+
+/* =================== Hero header =================== */
+
+.sched-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 18px;
+  backdrop-filter: blur(6px);
+  margin-bottom: 22px;
+  box-shadow: var(--sch-shadow-sm);
+}
+
+.sched-hero-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.sched-hero-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--sch-gradient);
+  color: #fff;
+  font-size: 24px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 10px 22px rgba(34, 195, 234, 0.35);
+}
+
+.sched-hero-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--sch-primary-dark);
+  letter-spacing: -0.01em;
+}
+
+.sched-hero-sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--sch-accent);
+  font-weight: 500;
+}
+
+.sched-hero-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sched-icon-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--sch-border);
+  color: var(--sch-primary);
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  text-decoration: none;
+}
+
+.sched-icon-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--sch-shadow-sm);
+}
+
+.sched-icon-btn.edit {
+  color: var(--sch-primary);
+  background: var(--sch-pill-blue);
+  border-color: rgba(30, 141, 255, 0.15);
+}
+
+.sched-icon-btn.danger {
+  color: var(--sch-danger);
+  background: #fff1f1;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.sched-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--sch-gradient);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  border: 0;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(30, 141, 255, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sched-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(30, 141, 255, 0.42);
+}
+
+/* =================== Layout grid =================== */
+
+.sched-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 22px;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .sched-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sched-main {
+  min-width: 0;
+}
+
+/* =================== Tabs =================== */
+
+.sched-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  padding: 6px;
+  border-radius: 14px;
+  margin-bottom: 18px;
+  box-shadow: var(--sch-shadow-sm);
+}
+
+.sched-tab {
+  text-align: center;
+  padding: 12px 16px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--sch-text-soft);
+  text-decoration: none;
+  border-radius: 10px;
+  position: relative;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.sched-tab:hover {
+  color: var(--sch-primary);
+}
+
+.sched-tab.active {
+  color: var(--sch-primary);
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(30, 141, 255, 0.15);
+}
+
+.sched-tab.active::after {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 4px;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--sch-gradient);
+}
+
+/* =================== Cards =================== */
+
+.sched-card {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 18px;
+  padding: 22px 24px;
+  backdrop-filter: blur(4px);
+  box-shadow: var(--sch-shadow-md);
+}
+
+.sched-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.sched-card-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--sch-primary-dark);
+  letter-spacing: -0.01em;
+}
+
+.sched-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.sched-nav-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--sch-border);
+  color: var(--sch-primary);
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+  font-size: 14px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sched-nav-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--sch-shadow-sm);
+}
+
+.sched-pill {
+  display: inline-block;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--sch-primary);
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 2px 6px rgba(30, 141, 255, 0.1);
+}
+
+/* =================== Monthly view =================== */
+
+.sched-month {
+  border: 1px solid var(--sch-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.sched-month-head {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--sch-gradient);
+  color: #fff;
+}
+
+.sched-month-head-cell {
+  text-align: center;
+  padding: 14px 10px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+
+.sched-month-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.sched-month-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-top: 1px solid var(--sch-border);
+}
+
+.sched-month-cell {
+  height: 120px;
+  padding: 8px 10px;
+  border-right: 1px solid var(--sch-border);
+  position: relative;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.sched-month-cell:last-child {
+  border-right: 0;
+}
+
+.sched-month-cell.muted {
+  background: #f6faff;
+  color: var(--sch-muted);
+}
+
+.sched-month-cell.today {
+  background: rgba(30, 141, 255, 0.07);
+}
+
+.sched-month-daynum {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--sch-primary);
+}
+
+.sched-month-cell.muted .sched-month-daynum {
+  color: #b4c3d9;
+}
+
+.today-pill {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--sch-today);
+  color: #fff !important;
+  font-weight: 800;
+}
+
+.sched-month-events {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sched-month-event {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  background: var(--sch-pill-blue);
+  color: var(--sch-primary-dark);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+  overflow: hidden;
+  flex-shrink: 0;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.sched-month-event:hover {
+  background: #d7e9ff;
+}
+
+.sched-month-event-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sch-primary);
+  flex-shrink: 0;
+}
+
+.sched-month-event-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sched-month-more {
+  font-size: 11px;
+  color: var(--sch-muted);
+  font-weight: 600;
+}
+
+/* =================== Weekly view =================== */
+
+.sched-week {
+  border: 1px solid var(--sch-border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.sched-week-head {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  background: var(--sch-gradient);
+  color: #fff;
+}
+
+.sched-week-head-cell {
+  padding: 12px 10px;
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.sched-week-head-cell:last-child {
+  border-right: 0;
+}
+
+.sched-week-head-label {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.sched-week-head-num {
+  margin-top: 6px;
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.sched-week-head-cell .today-pill {
+  width: 34px;
+  height: 34px;
+  font-size: 15px;
+  background: #fff;
+  color: var(--sch-primary) !important;
+}
+
+.sched-week-body {
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+.sched-week-row {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+  border-top: 1px solid var(--sch-border);
+}
+
+.sched-week-cell {
+  min-height: 70px;
+  padding: 6px 8px;
+  border-right: 1px solid var(--sch-border);
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sched-week-cell:last-child {
+  border-right: 0;
+}
+
+.sched-week-cell.sched-week-time-col {
+  background: #f8fbff;
+  color: var(--sch-primary);
+  font-weight: 700;
+  font-size: 13px;
+  align-items: flex-start;
+}
+
+.sched-week-cell.today-col {
+  background: rgba(30, 141, 255, 0.06);
+}
+
+.sched-week-event {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--sch-gradient);
+  color: #fff;
+  font-size: 11px;
+  text-decoration: none;
+  box-shadow: 0 4px 10px rgba(30, 141, 255, 0.25);
+}
+
+.sched-week-event-title {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sched-week-event-meta {
+  opacity: 0.9;
+}
+
+/* =================== Sidebar — Upcoming Schedule =================== */
+
+.sched-side {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--sch-shadow-md);
+  position: sticky;
+  top: 16px;
+}
+
+.sched-side-head {
+  background: var(--sch-gradient);
+  color: #fff;
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sched-side-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.22);
+  display: grid;
+  place-items: center;
+  font-size: 16px;
+}
+
+.sched-side-title {
+  font-weight: 800;
+  font-size: 16px;
+}
+
+.sched-side-sub {
+  font-size: 12px;
+  opacity: 0.92;
+  margin-top: 2px;
+}
+
+.sched-side-body {
+  padding: 20px 18px 22px;
+}
+
+.sched-side-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px 4px;
+}
+
+.sched-side-empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  background: var(--sch-pill-blue);
+  color: var(--sch-primary);
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  margin-bottom: 14px;
+}
+
+.sched-side-empty-title {
+  font-weight: 800;
+  color: var(--sch-primary-dark);
+}
+
+.sched-side-empty-sub {
+  font-size: 13px;
+  color: var(--sch-accent);
+  margin-top: 4px;
+}
+
+.spark {
+  color: #f5c842;
+}
+
+.sched-upcoming-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sched-upcoming-item {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--sch-border);
+}
+
+.sched-upcoming-title {
+  font-weight: 700;
+  color: var(--sch-primary-dark);
+  font-size: 14px;
+}
+
+.sched-upcoming-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--sch-text-soft);
+  margin-top: 4px;
+}
+
+.sched-upcoming-meta .dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--sch-muted);
+}
+
+.sched-upcoming-platform {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--sch-pill-blue);
+  color: var(--sch-primary);
+}
+
+/* =================== Agenda view =================== */
+
+.sched-agenda-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.sched-agenda-item {
+  background: #fff;
+  border: 1px solid var(--sch-border);
+  border-radius: 16px;
+  padding: 22px 24px;
+  box-shadow: var(--sch-shadow-sm);
+}
+
+.sched-agenda-item-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.sched-agenda-item-title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--sch-primary-dark);
+}
+
+.sched-agenda-item-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.inline-form {
+  display: inline;
+  margin: 0;
+}
+
+.sched-agenda-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 700px) {
+  .sched-agenda-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sched-agenda-tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #f7fbff;
+  border: 1px solid var(--sch-border);
+  border-radius: 12px;
+}
+
+.sched-agenda-tile-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.sched-agenda-tile-icon.purple { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+.sched-agenda-tile-icon.cyan { background: linear-gradient(135deg, #06b6d4, #22d3ee); }
+.sched-agenda-tile-icon.violet { background: linear-gradient(135deg, #7c3aed, #a855f7); }
+
+.sched-agenda-tile-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--sch-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sched-agenda-tile-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sch-text);
+  margin-top: 2px;
+}
+
+.sched-agenda-notes {
+  background: #f7fbff;
+  border-left: 3px solid var(--sch-primary);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.sched-agenda-notes-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--sch-primary);
+  letter-spacing: 0.08em;
+}
+
+.sched-agenda-notes-label .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sch-primary);
+}
+
+.sched-agenda-notes-body {
+  margin: 6px 0 0;
+  color: var(--sch-text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.sched-agenda-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--sch-text-soft);
+  flex-wrap: wrap;
+}
+
+.sched-agenda-footer strong {
+  color: var(--sch-primary-dark);
+}
+
+.sched-agenda-team {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--sch-pill-violet);
+  color: #6d28d9;
+  font-weight: 700;
+}
+
+.sched-agenda-empty {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--sch-text-soft);
+}
+
+.sched-agenda-empty-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background: var(--sch-pill-blue);
+  color: var(--sch-primary);
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  margin: 0 auto 14px;
+}
+
+.sched-agenda-empty-title {
+  font-weight: 800;
+  color: var(--sch-primary-dark);
+  font-size: 16px;
+}
+
+.sched-agenda-empty-sub {
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* =================== Modal =================== */
+
+.sched-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 39, 70, 0.45);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+  z-index: 2000;
+}
+
+.sched-modal-backdrop.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sched-modal {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 2001;
+  pointer-events: none;
+}
+
+.sched-modal.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.sched-modal-card {
+  width: min(560px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: var(--sch-shadow-lg);
+  overflow: hidden;
+}
+
+.sched-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: var(--sch-gradient);
+  color: #fff;
+  padding: 20px 24px;
+}
+
+.sched-modal-header-left {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.sched-modal-header-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.25);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+}
+
+.sched-modal-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.sched-modal-sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  opacity: 0.92;
+}
+
+.sched-modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: 0;
+  color: #fff;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  transition: background 0.15s ease;
+}
+
+.sched-modal-close:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.sched-modal-form {
+  padding: 22px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: calc(90vh - 84px);
+  overflow-y: auto;
+}
+
+.sched-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sched-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.sched-field-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--sch-text);
+}
+
+.sched-field-pill {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 13px;
+}
+
+.sched-field-pill.blue { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+.sched-field-pill.cyan { background: linear-gradient(135deg, #06b6d4, #22d3ee); }
+.sched-field-pill.green { background: linear-gradient(135deg, #10b981, #34d399); }
+.sched-field-pill.orange { background: linear-gradient(135deg, #f97316, #fb923c); }
+
+.req { color: var(--sch-danger); margin-left: 2px; }
+.opt { color: var(--sch-muted); font-weight: 500; font-size: 12px; margin-left: 4px; }
+
+.sched-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #dbeafe;
+  border-radius: 10px;
+  background: #f7fbff;
+  font-size: 14px;
+  color: var(--sch-text);
+  font-family: inherit;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+  box-sizing: border-box;
+}
+
+.sched-input:focus {
+  outline: none;
+  border-color: var(--sch-primary);
+  box-shadow: 0 0 0 3px rgba(30, 141, 255, 0.15);
+  background: #fff;
+}
+
+.sched-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%231e8dff'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px;
+  padding-right: 40px;
+}
+
+.sched-textarea {
+  resize: vertical;
+  min-height: 90px;
+  font-family: inherit;
+}
+
+.sched-error {
+  margin: 0;
+  color: var(--sch-danger);
+  font-size: 12px;
+}
+
+.sched-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #eef4fd;
+  margin-top: 6px;
+}
+
+.sched-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 22px;
+  border-radius: 10px;
+  border: 0;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sched-btn-ghost {
+  background: transparent;
+  color: var(--sch-text-soft);
+}
+
+.sched-btn-ghost:hover {
+  background: #f4f7fb;
+}
+
+.sched-btn-primary {
+  background: var(--sch-gradient);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(30, 141, 255, 0.35);
+}
+
+.sched-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px rgba(30, 141, 255, 0.45);
+}
+
+/* =================== Alerts =================== */
+
+.sched-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.sched-alert {
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sched-alert-success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.sched-alert-error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.sched-alert-info {
+  background: var(--sch-pill-blue);
+  color: var(--sch-primary-dark);
+}
