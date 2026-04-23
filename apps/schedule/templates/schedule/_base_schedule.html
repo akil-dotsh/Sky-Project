@@ -182,7 +182,7 @@
       <div class="sched-field">
         <label class="sched-field-label">
           <span class="sched-field-pill cyan"><i class="bi bi-link-45deg"></i></span>
-          Meeting Link <span class="req">*</span>
+          Meeting Link <span class="opt">(leave blank for in-person)</span>
         </label>
         {{ form.meeting_link }}
         {% if form.meeting_link.errors %}<p class="sched-error">{{ form.meeting_link.errors.0 }}</p>{% endif %}

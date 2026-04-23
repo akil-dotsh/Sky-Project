@@ -62,6 +62,7 @@ class MeetingForm(forms.ModelForm):
         self.fields['receiver'].empty_label = '-- Select Recipient --'
         self.fields['receiver'].required = False
         self.fields['location'].required = False
+        self.fields['meeting_link'].required = False
 
         for name in ('start_datetime', 'end_datetime'):
             value = self.initial.get(name) or getattr(self.instance, name, None)
