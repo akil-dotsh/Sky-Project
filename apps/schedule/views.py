@@ -1,10 +1,9 @@
 import calendar
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, time as dt_time
 
 from django.contrib import messages
-from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse
+from django.utils import timezone
 from django.utils.dateparse import parse_date
 
 from .forms import MeetingForm
@@ -21,9 +20,8 @@ def _parse_focus_date(request):
 
 
 def _build_month_grid(focus):
-    cal = calendar.Calendar(firstweekday=6)  # Sunday first, matching mockup
-    weeks = cal.monthdatescalendar(focus.year, focus.month)
-    return weeks
+    cal = calendar.Calendar(firstweekday=6)  # Sunday first
+    return cal.monthdatescalendar(focus.year, focus.month)
 
 
 def _nav_dates(focus):
@@ -44,8 +42,8 @@ def _week_range(focus):
 
 
 def _upcoming(limit=5):
-    today = date.today()
-    return Meeting.objects.filter(date__gte=today).order_by('date', 'time')[:limit]
+    now = timezone.now()
+    return Meeting.objects.filter(start_datetime__gte=now).order_by('start_datetime')[:limit]
 
 
 def _base_context(request, view_name):
@@ -69,12 +67,13 @@ def monthly_view(request):
     weeks = _build_month_grid(focus)
 
     month_meetings = Meeting.objects.filter(
-        date__year=focus.year,
-        date__month=focus.month,
+        start_datetime__year=focus.year,
+        start_datetime__month=focus.month,
     )
     by_day = {}
     for m in month_meetings:
-        by_day.setdefault(m.date, []).append(m)
+        d = timezone.localtime(m.start_datetime).date() if timezone.is_aware(m.start_datetime) else m.start_datetime.date()
+        by_day.setdefault(d, []).append(m)
 
     grid = []
     for week in weeks:
@@ -107,12 +106,19 @@ def weekly_view(request):
     next_date = start + timedelta(days=7)
 
     days = [start + timedelta(days=i) for i in range(7)]
-    hours = [f"{h:02d}:00" for h in range(8, 19)]  # 08:00 - 18:00
+    hours = [f"{h:02d}:00" for h in range(8, 19)]
 
-    week_meetings = Meeting.objects.filter(date__range=(start, end))
+    range_start = datetime.combine(start, dt_time.min)
+    range_end = datetime.combine(end, dt_time.max)
+    if timezone.is_aware(timezone.now()):
+        range_start = timezone.make_aware(range_start)
+        range_end = timezone.make_aware(range_end)
+    week_meetings = Meeting.objects.filter(start_datetime__range=(range_start, range_end))
+
     by_slot = {}
     for m in week_meetings:
-        key = (m.date, m.time.strftime('%H:00'))
+        local = timezone.localtime(m.start_datetime) if timezone.is_aware(m.start_datetime) else m.start_datetime
+        key = (local.date(), f"{local.hour:02d}:00")
         by_slot.setdefault(key, []).append(m)
 
     rows = []
@@ -140,7 +146,7 @@ def weekly_view(request):
 
 def agenda_view(request):
     ctx = _base_context(request, 'agenda')
-    meetings = Meeting.objects.all().order_by('date', 'time')
+    meetings = Meeting.objects.all().order_by('start_datetime')
     ctx.update({
         'meetings': meetings,
         'meeting_count': meetings.count(),
@@ -149,27 +155,41 @@ def agenda_view(request):
     return render(request, 'schedule/agenda.html', ctx)
 
 
+def _agenda_error_context(form, extra=None):
+    ctx = {
+        'form': form,
+        'meetings': Meeting.objects.all().order_by('start_datetime'),
+        'meeting_count': Meeting.objects.count(),
+        'active_view': 'agenda',
+        'today': date.today(),
+        'focus_date': date.today(),
+        'upcoming_meetings': _upcoming(),
+        'open_modal': True,
+    }
+    if extra:
+        ctx.update(extra)
+    return ctx
+
+
 def create_meeting(request):
     if request.method == 'POST':
         form = MeetingForm(request.POST)
         if form.is_valid():
             meeting = form.save(commit=False)
             if request.user.is_authenticated:
-                meeting.created_by = request.user
+                meeting.organiser = request.user
+            else:
+                from django.contrib.auth.models import User
+                fallback = User.objects.first()
+                if fallback is None:
+                    messages.error(request, 'No user available to organise the meeting. Please sign in.')
+                    return render(request, 'schedule/agenda.html', _agenda_error_context(form))
+                meeting.organiser = fallback
             meeting.save()
             messages.success(request, f'Meeting "{meeting.title}" scheduled.')
             return redirect(request.POST.get('next') or 'schedule:agenda')
         messages.error(request, 'Please fix the highlighted errors and try again.')
-        return render(request, 'schedule/agenda.html', {
-            'form': form,
-            'meetings': Meeting.objects.all(),
-            'meeting_count': Meeting.objects.count(),
-            'active_view': 'agenda',
-            'today': date.today(),
-            'focus_date': date.today(),
-            'upcoming_meetings': _upcoming(),
-            'open_modal': True,
-        })
+        return render(request, 'schedule/agenda.html', _agenda_error_context(form))
     return redirect('schedule:agenda')
 
 
@@ -185,18 +205,7 @@ def edit_meeting(request, pk):
     else:
         form = MeetingForm(instance=meeting)
 
-    ctx = {
-        'form': form,
-        'meeting': meeting,
-        'active_view': 'agenda',
-        'today': date.today(),
-        'focus_date': date.today(),
-        'upcoming_meetings': _upcoming(),
-        'meetings': Meeting.objects.all(),
-        'meeting_count': Meeting.objects.count(),
-        'open_modal': True,
-        'editing': True,
-    }
+    ctx = _agenda_error_context(form, {'meeting': meeting, 'editing': True})
     return render(request, 'schedule/agenda.html', ctx)
 
 

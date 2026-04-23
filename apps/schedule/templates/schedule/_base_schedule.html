@@ -14,13 +14,18 @@
     <div class="sched-hero-left">
       <div class="sched-hero-icon"><i class="bi bi-calendar2-week"></i></div>
       <div>
-        <h1 class="sched-hero-title">Open SKY</h1>
-        <p class="sched-hero-sub">Schedule &amp; Meetings Management</p>
+        <h1 class="sched-hero-title">Schedule &amp; Meeting Manager</h1>
+        <p class="sched-hero-sub">Plan, organise, and keep your team in sync</p>
       </div>
     </div>
     <div class="sched-hero-right">
-      <button class="sched-icon-btn" type="button" aria-label="Notifications"><i class="bi bi-bell"></i></button>
-      <button class="sched-icon-btn" type="button" aria-label="People"><i class="bi bi-people"></i></button>
+      <div class="sched-today-chip">
+        <i class="bi bi-calendar-event"></i>
+        <div>
+          <div class="sched-today-label">Today</div>
+          <div class="sched-today-date">{{ today|date:"l, F j" }}</div>
+        </div>
+      </div>
       <button class="sched-cta" type="button" id="openScheduleModal">
         <i class="bi bi-plus-lg"></i> Schedule Meeting
       </button>
@@ -62,11 +67,13 @@
             <li class="sched-upcoming-item">
               <div class="sched-upcoming-title">{{ m.title }}</div>
               <div class="sched-upcoming-meta">
-                <i class="bi bi-calendar-event"></i> {{ m.date|date:"D, M j" }}
+                <i class="bi bi-calendar-event"></i> {{ m.start_datetime|date:"D, M j" }}
                 <span class="dot"></span>
-                <i class="bi bi-clock"></i> {{ m.time|time:"H:i" }}
+                <i class="bi bi-clock"></i> {{ m.start_datetime|date:"H:i" }}
               </div>
-              <div class="sched-upcoming-platform">{{ m.platform }}</div>
+              <div class="sched-upcoming-platform">
+                {% if m.meeting_type == 'online' %}{{ m.location|default:'Online' }}{% else %}{{ m.location|default:'In person' }}{% endif %}
+              </div>
             </li>
             {% endfor %}
           </ul>
@@ -121,28 +128,46 @@
         <div class="sched-field">
           <label class="sched-field-label">
             <span class="sched-field-pill cyan"><i class="bi bi-calendar"></i></span>
-            Date <span class="req">*</span>
+            Start <span class="req">*</span>
           </label>
-          {{ form.date }}
-          {% if form.date.errors %}<p class="sched-error">{{ form.date.errors.0 }}</p>{% endif %}
+          {{ form.start_datetime }}
+          {% if form.start_datetime.errors %}<p class="sched-error">{{ form.start_datetime.errors.0 }}</p>{% endif %}
         </div>
         <div class="sched-field">
           <label class="sched-field-label">
             <span class="sched-field-pill cyan"><i class="bi bi-clock"></i></span>
-            Time <span class="req">*</span>
+            End <span class="req">*</span>
           </label>
-          {{ form.time }}
-          {% if form.time.errors %}<p class="sched-error">{{ form.time.errors.0 }}</p>{% endif %}
+          {{ form.end_datetime }}
+          {% if form.end_datetime.errors %}<p class="sched-error">{{ form.end_datetime.errors.0 }}</p>{% endif %}
         </div>
       </div>
 
       <div class="sched-field">
         <label class="sched-field-label">
           <span class="sched-field-pill green"><i class="bi bi-display"></i></span>
-          Platform <span class="req">*</span>
+          Meeting Type <span class="req">*</span>
         </label>
-        {{ form.platform }}
-        {% if form.platform.errors %}<p class="sched-error">{{ form.platform.errors.0 }}</p>{% endif %}
+        {{ form.meeting_type }}
+        {% if form.meeting_type.errors %}<p class="sched-error">{{ form.meeting_type.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="sched-field">
+        <label class="sched-field-label">
+          <span class="sched-field-pill green"><i class="bi bi-geo-alt"></i></span>
+          Location <span class="opt">(platform name for online, room for physical)</span>
+        </label>
+        {{ form.location }}
+        {% if form.location.errors %}<p class="sched-error">{{ form.location.errors.0 }}</p>{% endif %}
+      </div>
+
+      <div class="sched-field">
+        <label class="sched-field-label">
+          <span class="sched-field-pill cyan"><i class="bi bi-link-45deg"></i></span>
+          Meeting Link <span class="opt">(for online meetings)</span>
+        </label>
+        {{ form.meeting_link }}
+        {% if form.meeting_link.errors %}<p class="sched-error">{{ form.meeting_link.errors.0 }}</p>{% endif %}
       </div>
 
       <div class="sched-field">

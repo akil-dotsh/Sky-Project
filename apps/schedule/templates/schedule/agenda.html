@@ -9,14 +9,14 @@
 
   <div class="sched-agenda-list">
     {% for m in meetings %}
-      <article class="sched-agenda-item" id="m-{{ m.pk }}">
+      <article class="sched-agenda-item" id="m-{{ m.meeting_id }}">
         <div class="sched-agenda-item-head">
           <h3 class="sched-agenda-item-title">{{ m.title }}</h3>
           <div class="sched-agenda-item-actions">
-            <a class="sched-icon-btn edit" href="{% url 'schedule:edit' m.pk %}" aria-label="Edit meeting">
+            <a class="sched-icon-btn edit" href="{% url 'schedule:edit' m.meeting_id %}" aria-label="Edit meeting">
               <i class="bi bi-pencil"></i>
             </a>
-            <form method="post" action="{% url 'schedule:delete' m.pk %}" class="inline-form"
+            <form method="post" action="{% url 'schedule:delete' m.meeting_id %}" class="inline-form"
                   onsubmit="return confirm('Delete this meeting?');">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.get_full_path }}">
@@ -32,21 +32,35 @@
             <div class="sched-agenda-tile-icon purple"><i class="bi bi-calendar"></i></div>
             <div>
               <div class="sched-agenda-tile-label">Date</div>
-              <div class="sched-agenda-tile-value">{{ m.date|date:"l, F j, Y" }}</div>
+              <div class="sched-agenda-tile-value">{{ m.start_datetime|date:"l, F j, Y" }}</div>
             </div>
           </div>
           <div class="sched-agenda-tile">
             <div class="sched-agenda-tile-icon cyan"><i class="bi bi-clock"></i></div>
             <div>
               <div class="sched-agenda-tile-label">Time</div>
-              <div class="sched-agenda-tile-value">{{ m.time|time:"H:i" }}</div>
+              <div class="sched-agenda-tile-value">{{ m.start_datetime|date:"H:i" }} – {{ m.end_datetime|date:"H:i" }}</div>
             </div>
           </div>
           <div class="sched-agenda-tile">
-            <div class="sched-agenda-tile-icon violet"><i class="bi bi-display"></i></div>
+            <div class="sched-agenda-tile-icon violet">
+              <i class="bi {% if m.meeting_type == 'online' %}bi-camera-video{% else %}bi-geo-alt{% endif %}"></i>
+            </div>
             <div>
-              <div class="sched-agenda-tile-label">Platform</div>
-              <div class="sched-agenda-tile-value">{{ m.platform }}</div>
+              <div class="sched-agenda-tile-label">
+                {% if m.meeting_type == 'online' %}Online{% else %}Physical{% endif %}
+              </div>
+              <div class="sched-agenda-tile-value">
+                {% if m.meeting_type == 'online' %}
+                  {% if m.meeting_link %}
+                    <a href="{{ m.meeting_link }}" target="_blank" rel="noopener">{{ m.location|default:"Join link" }}</a>
+                  {% else %}
+                    {{ m.location|default:"—" }}
+                  {% endif %}
+                {% else %}
+                  {{ m.location|default:"—" }}
+                {% endif %}
+              </div>
             </div>
           </div>
         </div>
@@ -60,8 +74,8 @@
 
         <div class="sched-agenda-footer">
           <i class="bi bi-person"></i>
-          Created by
-          <strong>{% if m.created_by %}{{ m.created_by.get_full_name|default:m.created_by.username }}{% else %}Unknown{% endif %}</strong>
+          Organised by
+          <strong>{{ m.organiser.get_full_name|default:m.organiser.username }}</strong>
           on {{ m.created_at|date:"M j, Y" }}
           {% if m.team %}
             <span class="sched-agenda-team"><i class="bi bi-people"></i> {{ m.team.name }}</span>

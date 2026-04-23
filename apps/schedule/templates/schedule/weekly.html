@@ -28,9 +28,9 @@
           {% for cell in row.cells %}
             <div class="sched-week-cell {% if cell.is_today %}today-col{% endif %}">
               {% for m in cell.meetings %}
-                <a href="{% url 'schedule:agenda' %}#m-{{ m.pk }}" class="sched-week-event" title="{{ m.title }}">
+                <a href="{% url 'schedule:agenda' %}#m-{{ m.meeting_id }}" class="sched-week-event" title="{{ m.title }}">
                   <span class="sched-week-event-title">{{ m.title }}</span>
-                  <span class="sched-week-event-meta">{{ m.platform }}</span>
+                  <span class="sched-week-event-meta">{% if m.meeting_type == 'online' %}{{ m.location|default:'Online' }}{% else %}{{ m.location|default:'In person' }}{% endif %}</span>
                 </a>
               {% endfor %}
             </div>
