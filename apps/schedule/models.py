@@ -73,7 +73,7 @@ class Meeting(models.Model):
     end_datetime = models.DateTimeField()
     location = models.CharField(max_length=255, blank=True, null=True)
     agenda = models.TextField()
-    meeting_link = models.URLField(max_length=500)
+    meeting_link = models.URLField(max_length=500, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
