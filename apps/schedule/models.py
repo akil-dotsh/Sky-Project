@@ -83,3 +83,49 @@ class Meeting(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.start_datetime:%Y-%m-%d %H:%M})"
+
+
+class MeetingParticipant(models.Model):
+    """Unmanaged view of the ERD `Meeting_Participant` junction table.
+
+    Composite PK is (user_id, meeting_id, date). We declare `user` as the
+    Django primary key so the ORM has a single attribute to hang queries
+    off; uniqueness is already enforced at the table level.
+    """
+
+    JOIN_STATUS_CHOICES = [
+        ('Invited', 'Invited'),
+        ('Accepted', 'Accepted'),
+        ('Declined', 'Declined'),
+        ('Joined', 'Joined'),
+        ('No Show', 'No Show'),
+    ]
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.DO_NOTHING,
+        db_column='user_id',
+        primary_key=True,
+        related_name='meeting_participations',
+    )
+    meeting = models.ForeignKey(
+        Meeting,
+        on_delete=models.DO_NOTHING,
+        db_column='meeting_id',
+        related_name='participants',
+    )
+    date = models.DateTimeField(db_column='date')
+    join_status = models.CharField(
+        max_length=16,
+        choices=JOIN_STATUS_CHOICES,
+        default='Invited',
+    )
+    joined_at = models.DateTimeField(db_column='joined_at', null=True, blank=True)
+
+    class Meta:
+        managed = False
+        db_table = 'Meeting_Participant'
+        unique_together = (('user', 'meeting', 'date'),)
+
+    def __str__(self):
+        return f"{self.user} in {self.meeting} ({self.join_status})"
