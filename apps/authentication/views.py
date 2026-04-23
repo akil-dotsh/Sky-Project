@@ -89,11 +89,11 @@ def user_login(request,template_name):
                     #Only admin and Deprtment head
                     if user.is_superuser or user.groups.filter(name='Department Head').exists():
                         login(request,user)
-                        return redirect('admin:index')
+                        return redirect('management_dashboard')
                     # Only Team leader and Developer
                     elif user.groups.filter(name='Team Leader').exists() or user.groups.filter(name='Developer').exists():
                         login(request,user)
-                        return redirect('User Dashboard')
+                        return redirect('staff_dashboard')
                     else:
                         return render(request,template_name,{
                           'form':form,

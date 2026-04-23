@@ -1,0 +1,321 @@
+{% extends base_template %}
+{% load static %}
+
+{% block title %}Update Information{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/core/update_info.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+
+  <div class="profile-header">
+    <div>
+      <h1>Personal Information</h1>
+      <p>Click <strong>Update Details</strong> to update your personal details.</p>
+    </div>
+
+    <button id="editBtn" class="btn-primary" type="button">Update Details</button>
+
+    <div id="editActions" class="edit-actions hidden">
+      <button id="saveBtn" class="btn-primary" type="submit" form="profileForm">Save Changes</button>
+      <button id="cancelBtn" class="btn-ghost" type="button">Cancel</button>
+    </div>
+  </div>
+
+  <div class="profile-grid">
+
+    <!-- LEFT CARD -->
+    <div class="card">
+      <div class="card-title">
+        <h2>Profile</h2>
+        <span id="modeBadge" class="badge badge-view">View Mode</span>
+      </div>
+
+      <div class="profile-picture-section">
+        <img id="profilePreview"
+             src="{% static 'img/avatar.jpg' %}"
+             alt="Profile Picture" />
+
+        <div class="profile-picture-actions">
+          <label id="changePicLabel" class="btn-secondary disabled" for="profileImage" aria-disabled="true">
+            Change Picture
+          </label>
+          <input id="profileImage" name="profile_image" type="file" accept="image/*" hidden disabled />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Role</label>
+        <input
+          type="text"
+          value="{% if request.user.is_superuser %}Admin{% elif 'Department Head' in user_groups %}Department Head{% elif 'Team Leader' in user_groups %}Team Leader{% elif 'Developer' in user_groups %}Developer{% else %}User{% endif %}"
+          disabled
+        />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Joined Since</label>
+          <input type="text" value="{{ request.user.date_joined|date:'Y-m-d' }}" disabled />
+        </div>
+
+        <div class="form-group">
+          <label>Last Login</label>
+          <input type="text" value="{{ request.user.last_login|date:'Y-m-d H:i' }}" disabled />
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="form-group">
+        <label>Account Status</label>
+        <input type="text" value="{{ profile.status|default:'Active' }}" disabled />
+      </div>
+    </div>
+
+    <!-- RIGHT CARD -->
+    <div class="card">
+      <div class="card-title">
+        <h2>Details</h2>
+      </div>
+
+      <form id="profileForm" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="first_name">First Name</label>
+            <input
+              id="first_name"
+              name="first_name"
+              type="text"
+              value="{{ request.user.first_name|default:'' }}"
+              disabled
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="last_name">Last Name</label>
+            <input
+              id="last_name"
+              name="last_name"
+              type="text"
+              value="{{ request.user.last_name|default:'' }}"
+              disabled
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value="{{ request.user.email|default:'' }}"
+              disabled
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="phone_number">Phone Number</label>
+            <input
+              id="phone_number"
+              name="phone_number"
+              type="tel"
+              value="{{ profile.phone|default:'' }}"
+              disabled
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="office_location">Office Location</label>
+            <input
+              id="office_location"
+              name="office_location"
+              type="text"
+              value="{{ profile.office_location|default:'' }}"
+              disabled
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="availability_status">Availability Status</label>
+            <select id="availability_status" name="availability_status" disabled>
+              <option value="Online" {% if profile.availability_status == "Online" %}selected{% endif %}>Online</option>
+              <option value="In a meeting" {% if profile.availability_status == "In a meeting" %}selected{% endif %}>In a meeting</option>
+              <option value="Focus time" {% if profile.availability_status == "Focus time" %}selected{% endif %}>Focus time</option>
+              <option value="Offline" {% if profile.availability_status == "Offline" %}selected{% endif %}>Offline</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="bio">Bio</label>
+          <textarea
+            id="bio"
+            name="bio"
+            rows="4"
+            disabled
+          >{{ profile.bio|default:'' }}</textarea>
+        </div>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="status">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+
+        <div id="statusMsg" class="status hidden"></div>
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const editBtn = document.getElementById("editBtn");
+  const editActions = document.getElementById("editActions");
+  const cancelBtn = document.getElementById("cancelBtn");
+  const saveBtn = document.getElementById("saveBtn");
+
+  const modeBadge = document.getElementById("modeBadge");
+  const statusMsg = document.getElementById("statusMsg");
+
+  const changePicLabel = document.getElementById("changePicLabel");
+  const profileImage = document.getElementById("profileImage");
+  const preview = document.getElementById("profilePreview");
+
+  const editableFields = [
+    document.getElementById("first_name"),
+    document.getElementById("last_name"),
+    document.getElementById("email"),
+    document.getElementById("phone_number"),
+    document.getElementById("office_location"),
+    document.getElementById("availability_status"),
+    document.getElementById("bio"),
+  ];
+
+  let originalValues = {};
+
+  function enterEditMode() {
+    originalValues = {};
+
+    editableFields.forEach((field) => {
+      if (!field) return;
+      originalValues[field.id] = field.value;
+      field.disabled = false;
+    });
+
+    if (profileImage) {
+      profileImage.disabled = false;
+    }
+
+    if (changePicLabel) {
+      changePicLabel.classList.remove("disabled");
+      changePicLabel.setAttribute("aria-disabled", "false");
+    }
+
+    if (editBtn) {
+      editBtn.classList.add("hidden");
+    }
+
+    if (editActions) {
+      editActions.classList.remove("hidden");
+    }
+
+    if (modeBadge) {
+      modeBadge.textContent = "Edit Mode";
+      modeBadge.classList.remove("badge-view");
+      modeBadge.classList.add("badge-edit");
+    }
+
+    if (statusMsg) {
+      statusMsg.classList.add("hidden");
+    }
+  }
+
+  function exitEditMode(restoreValues = false) {
+    editableFields.forEach((field) => {
+      if (!field) return;
+
+      if (restoreValues && Object.prototype.hasOwnProperty.call(originalValues, field.id)) {
+        field.value = originalValues[field.id];
+      }
+
+      field.disabled = true;
+    });
+
+    if (profileImage) {
+      profileImage.disabled = true;
+      profileImage.value = "";
+    }
+
+    if (changePicLabel) {
+      changePicLabel.classList.add("disabled");
+      changePicLabel.setAttribute("aria-disabled", "true");
+    }
+
+    if (editActions) {
+      editActions.classList.add("hidden");
+    }
+
+    if (editBtn) {
+      editBtn.classList.remove("hidden");
+    }
+
+    if (modeBadge) {
+      modeBadge.textContent = "View Mode";
+      modeBadge.classList.remove("badge-edit");
+      modeBadge.classList.add("badge-view");
+    }
+  }
+
+  if (editBtn) {
+    editBtn.addEventListener("click", enterEditMode);
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", function () {
+      exitEditMode(true);
+      if (statusMsg) {
+        statusMsg.classList.add("hidden");
+      }
+    });
+  }
+
+  if (saveBtn) {
+    saveBtn.addEventListener("click", function (event) {
+      const emailField = document.getElementById("email");
+      const email = emailField ? emailField.value.trim() : "";
+
+      if (email && (!email.includes("@") || !email.includes("."))) {
+        event.preventDefault();
+
+        if (statusMsg) {
+          statusMsg.textContent = "Please enter a valid email address.";
+          statusMsg.classList.remove("hidden");
+        }
+      }
+    });
+  }
+
+  if (profileImage) {
+    profileImage.addEventListener("change", function (event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file || !preview) return;
+
+      preview.src = URL.createObjectURL(file);
+    });
+  }
+
+  exitEditMode(false);
+</script>
+{% endblock %}

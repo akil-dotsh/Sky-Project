@@ -23,5 +23,6 @@ urlpatterns = [
     path("", include("apps.dashboard.urls")),
     path('teams/', include('apps.teams.urls')),
     path('schedule/', include('apps.schedule.urls')),
+    path('core/', include('apps.core.urls')),
 
 ]
