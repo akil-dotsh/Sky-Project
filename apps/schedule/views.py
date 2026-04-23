@@ -2,6 +2,7 @@ import calendar
 from datetime import date, datetime, timedelta, time as dt_time
 
 from django.contrib import messages
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
@@ -41,9 +42,21 @@ def _week_range(focus):
     return start, end
 
 
+def _as_local_dt(value):
+    if value is None:
+        return None
+    return timezone.localtime(value) if timezone.is_aware(value) else value
+
+
 def _upcoming(limit=5):
     now = timezone.now()
     return Meeting.objects.filter(start_datetime__gte=now).order_by('start_datetime')[:limit]
+
+
+def _resolve_organiser(request):
+    if request.user.is_authenticated:
+        return request.user
+    return User.objects.first()
 
 
 def _base_context(request, view_name):
@@ -72,8 +85,8 @@ def monthly_view(request):
     )
     by_day = {}
     for m in month_meetings:
-        d = timezone.localtime(m.start_datetime).date() if timezone.is_aware(m.start_datetime) else m.start_datetime.date()
-        by_day.setdefault(d, []).append(m)
+        local = _as_local_dt(m.start_datetime)
+        by_day.setdefault(local.date(), []).append(m)
 
     grid = []
     for week in weeks:
@@ -93,7 +106,7 @@ def monthly_view(request):
         'prev_date': prev_month,
         'next_date': next_month,
         'weekday_labels': ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-        'form': MeetingForm(),
+        'form': MeetingForm(organiser=_resolve_organiser(request)),
     })
     return render(request, 'schedule/monthly.html', ctx)
 
@@ -117,7 +130,7 @@ def weekly_view(request):
 
     by_slot = {}
     for m in week_meetings:
-        local = timezone.localtime(m.start_datetime) if timezone.is_aware(m.start_datetime) else m.start_datetime
+        local = _as_local_dt(m.start_datetime)
         key = (local.date(), f"{local.hour:02d}:00")
         by_slot.setdefault(key, []).append(m)
 
@@ -139,7 +152,7 @@ def weekly_view(request):
         'rows': rows,
         'prev_date': prev_date,
         'next_date': next_date,
-        'form': MeetingForm(),
+        'form': MeetingForm(organiser=_resolve_organiser(request)),
     })
     return render(request, 'schedule/weekly.html', ctx)
 
@@ -150,7 +163,7 @@ def agenda_view(request):
     ctx.update({
         'meetings': meetings,
         'meeting_count': meetings.count(),
-        'form': MeetingForm(),
+        'form': MeetingForm(organiser=_resolve_organiser(request)),
     })
     return render(request, 'schedule/agenda.html', ctx)
 
@@ -172,19 +185,15 @@ def _agenda_error_context(form, extra=None):
 
 
 def create_meeting(request):
+    organiser = _resolve_organiser(request)
     if request.method == 'POST':
-        form = MeetingForm(request.POST)
+        form = MeetingForm(request.POST, organiser=organiser)
         if form.is_valid():
             meeting = form.save(commit=False)
-            if request.user.is_authenticated:
-                meeting.organiser = request.user
-            else:
-                from django.contrib.auth.models import User
-                fallback = User.objects.first()
-                if fallback is None:
-                    messages.error(request, 'No user available to organise the meeting. Please sign in.')
-                    return render(request, 'schedule/agenda.html', _agenda_error_context(form))
-                meeting.organiser = fallback
+            if organiser is None:
+                messages.error(request, 'No user available to organise the meeting. Please sign in.')
+                return render(request, 'schedule/agenda.html', _agenda_error_context(form))
+            meeting.organiser = organiser
             meeting.save()
             messages.success(request, f'Meeting "{meeting.title}" scheduled.')
             return redirect(request.POST.get('next') or 'schedule:agenda')
@@ -195,15 +204,16 @@ def create_meeting(request):
 
 def edit_meeting(request, pk):
     meeting = get_object_or_404(Meeting, pk=pk)
+    organiser = _resolve_organiser(request)
     if request.method == 'POST':
-        form = MeetingForm(request.POST, instance=meeting)
+        form = MeetingForm(request.POST, instance=meeting, organiser=organiser)
         if form.is_valid():
             form.save()
             messages.success(request, f'Meeting "{meeting.title}" updated.')
             return redirect(request.POST.get('next') or 'schedule:agenda')
         messages.error(request, 'Please fix the highlighted errors and try again.')
     else:
-        form = MeetingForm(instance=meeting)
+        form = MeetingForm(instance=meeting, organiser=organiser)
 
     ctx = _agenda_error_context(form, {'meeting': meeting, 'editing': True})
     return render(request, 'schedule/agenda.html', ctx)

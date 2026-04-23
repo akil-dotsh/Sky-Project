@@ -711,6 +711,55 @@
   font-size: 19px;
   font-weight: 800;
   color: var(--sch-primary-dark);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.sched-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sched-type-badge.team {
+  background: var(--sch-pill-violet);
+  color: #6d28d9;
+}
+
+.sched-type-badge.individual {
+  background: var(--sch-pill-cyan);
+  color: #0891b2;
+}
+
+.sched-agenda-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.sched-agenda-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--sch-pill-blue);
+  color: var(--sch-primary-dark);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.sched-agenda-meta-item.link:hover {
+  background: #d7e9ff;
 }
 
 .sched-agenda-item-actions {

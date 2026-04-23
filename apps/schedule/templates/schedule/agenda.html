@@ -11,7 +11,12 @@
     {% for m in meetings %}
       <article class="sched-agenda-item" id="m-{{ m.meeting_id }}">
         <div class="sched-agenda-item-head">
-          <h3 class="sched-agenda-item-title">{{ m.title }}</h3>
+          <h3 class="sched-agenda-item-title">
+            {{ m.title }}
+            <span class="sched-type-badge {% if m.meeting_type == 'Team' %}team{% else %}individual{% endif %}">
+              {{ m.meeting_type }}
+            </span>
+          </h3>
           <div class="sched-agenda-item-actions">
             <a class="sched-icon-btn edit" href="{% url 'schedule:edit' m.meeting_id %}" aria-label="Edit meeting">
               <i class="bi bi-pencil"></i>
@@ -44,42 +49,46 @@
           </div>
           <div class="sched-agenda-tile">
             <div class="sched-agenda-tile-icon violet">
-              <i class="bi {% if m.meeting_type == 'online' %}bi-camera-video{% else %}bi-geo-alt{% endif %}"></i>
+              <i class="bi {% if m.meeting_type == 'Team' %}bi-people{% else %}bi-person{% endif %}"></i>
             </div>
             <div>
               <div class="sched-agenda-tile-label">
-                {% if m.meeting_type == 'online' %}Online{% else %}Physical{% endif %}
+                {% if m.meeting_type == 'Team' %}Team{% else %}Recipient{% endif %}
               </div>
               <div class="sched-agenda-tile-value">
-                {% if m.meeting_type == 'online' %}
-                  {% if m.meeting_link %}
-                    <a href="{{ m.meeting_link }}" target="_blank" rel="noopener">{{ m.location|default:"Join link" }}</a>
-                  {% else %}
-                    {{ m.location|default:"—" }}
-                  {% endif %}
+                {% if m.meeting_type == 'Team' %}
+                  {{ m.team.team_name|default:"—" }}
                 {% else %}
-                  {{ m.location|default:"—" }}
+                  {% if m.receiver %}{{ m.receiver.get_full_name|default:m.receiver.username }}{% else %}—{% endif %}
                 {% endif %}
               </div>
             </div>
           </div>
         </div>
 
-        {% if m.agenda %}
-          <div class="sched-agenda-notes">
-            <div class="sched-agenda-notes-label"><span class="dot"></span> AGENDA</div>
-            <p class="sched-agenda-notes-body">{{ m.agenda|linebreaksbr }}</p>
+        {% if m.location or m.meeting_link %}
+          <div class="sched-agenda-meta-row">
+            {% if m.location %}
+              <span class="sched-agenda-meta-item"><i class="bi bi-geo-alt"></i> {{ m.location }}</span>
+            {% endif %}
+            {% if m.meeting_link %}
+              <a class="sched-agenda-meta-item link" href="{{ m.meeting_link }}" target="_blank" rel="noopener">
+                <i class="bi bi-link-45deg"></i> Join meeting
+              </a>
+            {% endif %}
           </div>
         {% endif %}
+
+        <div class="sched-agenda-notes">
+          <div class="sched-agenda-notes-label"><span class="dot"></span> AGENDA</div>
+          <p class="sched-agenda-notes-body">{{ m.agenda|linebreaksbr }}</p>
+        </div>
 
         <div class="sched-agenda-footer">
           <i class="bi bi-person"></i>
           Organised by
           <strong>{{ m.organiser.get_full_name|default:m.organiser.username }}</strong>
           on {{ m.created_at|date:"M j, Y" }}
-          {% if m.team %}
-            <span class="sched-agenda-team"><i class="bi bi-people"></i> {{ m.team.name }}</span>
-          {% endif %}
         </div>
       </article>
     {% empty %}

@@ -1,5 +1,7 @@
 from django import forms
-from .models import Meeting
+from django.contrib.auth.models import User
+
+from .models import Meeting, ScheduleTeam
 
 
 class MeetingForm(forms.ModelForm):
@@ -10,9 +12,10 @@ class MeetingForm(forms.ModelForm):
             'start_datetime',
             'end_datetime',
             'meeting_type',
+            'receiver',
+            'team',
             'location',
             'meeting_link',
-            'team',
             'agenda',
         ]
         widgets = {
@@ -28,32 +31,38 @@ class MeetingForm(forms.ModelForm):
                 'class': 'sched-input',
                 'type': 'datetime-local',
             }),
-            'meeting_type': forms.Select(attrs={'class': 'sched-input sched-select'}),
+            'meeting_type': forms.Select(attrs={'class': 'sched-input sched-select', 'data-meeting-type': '1'}),
+            'receiver': forms.Select(attrs={'class': 'sched-input sched-select'}),
+            'team': forms.Select(attrs={'class': 'sched-input sched-select'}),
             'location': forms.TextInput(attrs={
                 'class': 'sched-input',
-                'placeholder': 'e.g., Microsoft Teams, Conference Room A',
+                'placeholder': 'e.g., Conference Room A (optional)',
             }),
             'meeting_link': forms.URLInput(attrs={
                 'class': 'sched-input',
                 'placeholder': 'https://...',
             }),
-            'team': forms.Select(attrs={'class': 'sched-input sched-select'}),
             'agenda': forms.Textarea(attrs={
                 'class': 'sched-input sched-textarea',
-                'placeholder': 'Add meeting details, agenda items, or important notes...',
+                'placeholder': 'Agenda items, notes, etc.',
                 'rows': 4,
             }),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, organiser=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self._organiser = organiser
+        self.fields['team'].queryset = ScheduleTeam.objects.all().order_by('team_name')
         self.fields['team'].empty_label = '-- Select Team --'
         self.fields['team'].required = False
+        receiver_qs = User.objects.all().order_by('first_name', 'last_name', 'username')
+        if organiser is not None and getattr(organiser, 'pk', None):
+            receiver_qs = receiver_qs.exclude(pk=organiser.pk)
+        self.fields['receiver'].queryset = receiver_qs
+        self.fields['receiver'].empty_label = '-- Select Recipient --'
+        self.fields['receiver'].required = False
         self.fields['location'].required = False
-        self.fields['meeting_link'].required = False
-        self.fields['agenda'].required = False
 
-        # Format datetime values for datetime-local input
         for name in ('start_datetime', 'end_datetime'):
             value = self.initial.get(name) or getattr(self.instance, name, None)
             if value:
@@ -61,8 +70,26 @@ class MeetingForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        mtype = cleaned.get('meeting_type')
+        receiver = cleaned.get('receiver')
+        team = cleaned.get('team')
+
+        if mtype == 'Individual':
+            if not receiver:
+                self.add_error('receiver', 'Individual meetings require a recipient.')
+            if team:
+                self.add_error('team', 'Individual meetings cannot also have a team.')
+            if self._organiser and receiver and receiver.pk == self._organiser.pk:
+                self.add_error('receiver', 'Recipient cannot be the organiser.')
+        elif mtype == 'Team':
+            if not team:
+                self.add_error('team', 'Team meetings require a team.')
+            if receiver:
+                self.add_error('receiver', 'Team meetings cannot also have a recipient.')
+
         start = cleaned.get('start_datetime')
         end = cleaned.get('end_datetime')
         if start and end and end <= start:
-            self.add_error('end_datetime', 'End time must be after the start time.')
+            self.add_error('end_datetime', 'End time must be after start time.')
+
         return cleaned
