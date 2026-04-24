@@ -101,45 +101,47 @@
         <!-- Generate form -->
         <div class="card card-pad">
           <div class="section-title">Generate Report</div>
-          <div class="page-sub" style="margin-top:4px;">Dummy builder (wire to DB later).</div>
+          <div class="page-sub" style="margin-top:4px;">Generate a PDF report from Team, JiraProject and JiraBoard data.</div>
 
-          <form class="form">
+          <form class="form" method="POST" action="{% url 'report_generate' %}">
+            {% csrf_token %}
+
             <label class="label">Report Type</label>
-            <select class="input">
-              <option selected>Team Health Summary</option>
-              <option>Delivery / Velocity</option>
-              <option>Dependency Risk</option>
-              <option>Governance & Access</option>
-              <option>Messaging & Comms</option>
-              <option>Custom (Metrics Picker)</option>
+            <select class="input" name="report_type" required>
+              <option value="Team Health Summary" selected>Team Health Summary</option>
+              <option value="Team Operational & Jira Status Report">Team Operational & Jira Status Report</option>
+              <option value="Dependency Risk">Dependency Risk</option>
+              <option value="Governance & Access">Governance & Access</option>
+              <option value="Messaging & Comms">Messaging & Comms</option>
+              <option value="Custom">Custom (Metrics Picker)</option>
             </select>
 
             <label class="label">Department</label>
-            <select class="input">
-              <option selected>Engineering</option>
-              <option>Platform</option>
-              <option>Product</option>
+            <select class="input" name="department" required>
+              <option value="Engineering" selected>Engineering</option>
+              <option value="Platform">Platform</option>
+              <option value="Product">Product</option>
             </select>
 
             <label class="label">Teams</label>
-            <select class="input">
-              <option selected>Total Teams</option>
-              <option>Teams without Team Leader</option>
-              <option>Core Services</option>
-              <option>Mobile</option>
-              <option>Web</option>
-              <option>Data</option>
-              <option>DevOps</option>
+            <select class="input" name="team_id" required>
+              <option value="">Select Team</option>
+              {% for team in teams %}
+                <option value="{{ team.team_id }}">{{ team.team_name }}</option>
+              {% empty %}
+                <option value="">No teams found</option>
+              {% endfor %}
             </select>
 
             <div class="row2">
               <div>
                 <label class="label">From</label>
-                <input class="input" type="date" value="2026-01-01">
+                <input class="input" type="date" name="from_date" value="2026-01-01" required>
               </div>
+
               <div>
                 <label class="label">To</label>
-                <input class="input" type="date" value="2026-01-31">
+                <input class="input" type="date" name="to_date" value="2026-01-31" required>
               </div>
             </div>
 
@@ -148,15 +150,21 @@
                 <div style="font-weight:900;">Compare to previous</div>
                 <div class="page-sub">Show delta vs last period</div>
               </div>
+
               <label class="switch">
-                <input type="checkbox" checked>
+                <input type="checkbox" name="compare_previous" checked>
                 <span class="slider"></span>
               </label>
             </div>
 
             <div class="row2">
-              <button class="btn primary" type="button"><i class="bi bi-gear"></i> Generate</button>
-              <button class="btn" type="button"><i class="bi bi-clock-history"></i> Schedule</button>
+              <button class="btn primary" type="submit">
+                <i class="bi bi-gear"></i> Generate
+              </button>
+
+              <button class="btn" type="button">
+                <i class="bi bi-clock-history"></i> Schedule
+              </button>
             </div>
           </form>
         </div>
@@ -255,12 +263,20 @@
                       </button>
 
                       {% if report.status == "Successful" %}
-                        <button class="btn soft icon-btn" type="button">
-                          <i class="bi bi-filetype-pdf"></i>
-                        </button>
+                        {% if report.report_url %}
+                          <a class="btn soft icon-btn" href="{{ report.report_url }}" target="_blank" title="Download PDF">
+                            <i class="bi bi-filetype-pdf"></i>
+                          </a>
+                        {% else %}
+                          <button class="btn soft icon-btn" type="button" disabled title="PDF not available">
+                            <i class="bi bi-filetype-pdf"></i>
+                          </button>
+                        {% endif %}
+
                         <button class="btn soft icon-btn" type="button">
                           <i class="bi bi-filetype-xlsx"></i>
                         </button>
+
                         <button class="btn primary icon-btn" type="button" data-open="shareModal">
                           <i class="bi bi-share"></i>
                         </button>
@@ -268,9 +284,11 @@
                         <button class="btn soft icon-btn" type="button" disabled>
                           <i class="bi bi-filetype-pdf"></i>
                         </button>
+
                         <button class="btn soft icon-btn" type="button" disabled>
                           <i class="bi bi-filetype-xlsx"></i>
                         </button>
+
                         <button class="btn primary icon-btn" type="button" disabled>
                           <i class="bi bi-share"></i>
                         </button>
@@ -278,6 +296,7 @@
                         <button class="btn icon-btn" type="button">
                           <i class="bi bi-arrow-repeat"></i>
                         </button>
+
                         <button class="btn danger icon-btn" type="button">
                           <i class="bi bi-trash"></i>
                         </button>
@@ -285,6 +304,7 @@
                     </div>
                   </td>
                 </tr>
+
                 {% empty %}
                 <tr>
                   <td colspan="5" class="small empty-row">
@@ -318,19 +338,22 @@
           <div>
             <label class="label">Select report</label>
             <select class="input">
-              <option selected>Team Health Summary (Today)</option>
-              <option>Dependency Risk Report (Yesterday)</option>
-              <option>Governance Access Audit (Jan 12)</option>
+              {% for report in last_15_reports %}
+                <option>{{ report.report_name }}</option>
+              {% empty %}
+                <option>No reports available</option>
+              {% endfor %}
             </select>
           </div>
+
           <div>
             <label class="label">Share to teams</label>
             <select class="input" multiple size="4">
-              <option selected>Core Services</option>
-              <option selected>Mobile</option>
-              <option>Web</option>
-              <option>Data</option>
-              <option>DevOps</option>
+              {% for team in teams %}
+                <option>{{ team.team_name }}</option>
+              {% empty %}
+                <option>No teams found</option>
+              {% endfor %}
             </select>
           </div>
         </div>
@@ -342,7 +365,7 @@
           <label class="perm"><input type="radio" name="perm"> View + Export</label>
         </div>
 
-        <label class="label">Message (optional)</label>
+        <label class="label">Message optional</label>
         <textarea class="input" rows="3" placeholder="Add a note for the team..."></textarea>
 
         <div class="hint">
@@ -390,14 +413,22 @@
 
   function openModal(id) {
     const modal = document.getElementById(id);
-    if (!modal) return;
+
+    if (!modal) {
+      return;
+    }
+
     modal.classList.add('active');
     modal.setAttribute('aria-hidden', 'false');
   }
 
   function closeModal(id) {
     const modal = document.getElementById(id);
-    if (!modal) return;
+
+    if (!modal) {
+      return;
+    }
+
     modal.classList.remove('active');
     modal.setAttribute('aria-hidden', 'true');
   }
@@ -419,6 +450,7 @@
   if (searchInput && reportFilterForm) {
     searchInput.addEventListener('input', function () {
       clearTimeout(searchTimeout);
+
       searchTimeout = setTimeout(() => {
         reportFilterForm.submit();
       }, 400);
