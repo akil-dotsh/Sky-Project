@@ -159,3 +159,75 @@ class UserNotification(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.notification} ({self.delivery_status})"
+
+class JiraBoard(models.Model):
+    jiraBoard_id = models.AutoField(primary_key=True)
+
+    board_name = models.TextField()
+
+    board_type = models.TextField(
+        default='Scrum',
+        choices=[
+            ('Scrum', 'Scrum'),
+            ('Kanban', 'Kanban'),
+            ('Backlog', 'Backlog'),
+            ('Bug Tracking', 'Bug Tracking'),
+        ]
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.TextField(blank=True, null=True)
+    updated_at = models.TextField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'JiraBoard'
+
+    def __str__(self):
+        return self.board_name
+
+class JiraProject(models.Model):
+    jira_project_id = models.AutoField(primary_key=True)
+
+    project_name = models.TextField()
+    description = models.TextField(blank=True, null=True)
+
+    project_type = models.TextField(
+        default='Software',
+        choices=[
+            ('Software', 'Software'),
+            ('Service', 'Service'),
+            ('Infrastructure', 'Infrastructure'),
+            ('Research', 'Research'),
+            ('Maintenance', 'Maintenance'),
+            ('Support', 'Support'),
+        ]
+    )
+
+    created_at = models.TextField(blank=True, null=True)
+
+    status = models.TextField(
+        default='Active',
+        choices=[
+            ('Active', 'Active'),
+            ('On Hold', 'On Hold'),
+            ('Completed', 'Completed'),
+            ('Archived', 'Archived'),
+        ]
+    )
+
+    jiraBoard = models.ForeignKey(
+        JiraBoard,
+        on_delete=models.DO_NOTHING,
+        db_column='jiraBoard_id'
+    )
+
+    class Meta:
+        managed = False
+        db_table = 'JiraProject'
+
+    def __str__(self):
+        return self.project_name
+
+
