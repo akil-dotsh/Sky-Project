@@ -52,7 +52,7 @@
         <div class="stat-row">
           <div>
             <div class="stat-label">Shared with Teams</div>
-            <div class="stat-value">17</div>
+            <div class="stat-value">{{ share_report_count }}</div>
           </div>
           <span class="pill blue">Teams</span>
         </div>
@@ -84,7 +84,7 @@
             <p class="a-title">Generate</p>
             <p class="a-sub">Create a new report</p>
           </a>
-          <a class="action deep" href="#">
+          <a class="action deep" href="{% url 'management_dashboard' %}">
             <p class="a-title">Dashboards</p>
             <p class="a-sub">Analytics overview</p>
           </a>
@@ -258,9 +258,15 @@
 
                   <td class="actions-cell">
                     <div class="action-buttons">
-                      <button class="btn" type="button">
-                        <i class="bi bi-eye"></i> View
-                      </button>
+                      {% if report.report_url %}
+                          <a class="btn"  href="{{ report.report_url }}" target="_blank" style="text-decoration: none; color: #0b1220">
+                            <i class="bi bi-eye"></i> View
+                          </a>
+                        {% else %}
+                          <button class="btn" type="button"  disabled>
+                            <i class="bi bi-eye"></i> View
+                          </button>
+                        {% endif %}
 
                       {% if report.status == "Successful" %}
                         {% if report.report_url %}
@@ -321,38 +327,51 @@
     </section>
   </section>
 
-  <!-- Share Modal -->
-  <div class="modal" id="shareModal" aria-hidden="true">
-    <div class="modal-backdrop" data-close="shareModal"></div>
-    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Share Report">
+<!-- Share Modal -->
+<div class="modal" id="shareModal" aria-hidden="true">
+  <div class="modal-backdrop" data-close="shareModal"></div>
+
+  <div class="modal-card" role="dialog" aria-modal="true" aria-label="Share Report">
+    <form method="POST" action="{% url 'share_report' %}">
+      {% csrf_token %}
+
       <div class="modal-head">
         <div>
           <div class="modal-title">Share Report with Team</div>
-          <div class="page-sub">Dummy modal (wire to messaging later).</div>
+          <div class="page-sub">Share generated PDF reports with selected teams.</div>
         </div>
-        <button class="btn" type="button" data-close="shareModal"><i class="bi bi-x-lg"></i></button>
+
+        <button class="btn" type="button" data-close="shareModal">
+          <i class="bi bi-x-lg"></i>
+        </button>
       </div>
 
       <div class="modal-body">
         <div class="row2">
           <div>
             <label class="label">Select report</label>
-            <select class="input">
+            <select class="input" name="report_id" required>
               {% for report in last_15_reports %}
-                <option>{{ report.report_name }}</option>
+                {% if report.status == "Successful" and report.report_url %}
+                  <option value="{{ report.report_id }}">
+                    {{ report.report_name }}
+                  </option>
+                {% endif %}
               {% empty %}
-                <option>No reports available</option>
+                <option value="">No reports available</option>
               {% endfor %}
             </select>
           </div>
 
           <div>
             <label class="label">Share to teams</label>
-            <select class="input" multiple size="4">
+            <select class="input" name="team_ids" multiple size="4" required>
               {% for team in teams %}
-                <option>{{ team.team_name }}</option>
+                <option value="{{ team.team_id }}">
+                  {{ team.team_name }}
+                </option>
               {% empty %}
-                <option>No teams found</option>
+                <option value="">No teams found</option>
               {% endfor %}
             </select>
           </div>
@@ -360,13 +379,29 @@
 
         <label class="label">Permissions</label>
         <div class="perm-row">
-          <label class="perm"><input type="radio" name="perm" checked> View only</label>
-          <label class="perm"><input type="radio" name="perm"> View + Comment</label>
-          <label class="perm"><input type="radio" name="perm"> View + Export</label>
+          <label class="perm">
+            <input type="radio" name="permission" value="View only" checked>
+            View only
+          </label>
+
+          <label class="perm">
+            <input type="radio" name="permission" value="View + Comment">
+            View + Comment
+          </label>
+
+          <label class="perm">
+            <input type="radio" name="permission" value="View + Export">
+            View + Export
+          </label>
         </div>
 
         <label class="label">Message optional</label>
-        <textarea class="input" rows="3" placeholder="Add a note for the team..."></textarea>
+        <textarea
+          class="input"
+          name="message"
+          rows="3"
+          placeholder="Add a note for the team..."
+        ></textarea>
 
         <div class="hint">
           <i class="bi bi-info-circle"></i>
@@ -375,11 +410,17 @@
       </div>
 
       <div class="modal-foot">
-        <button class="btn" type="button" data-close="shareModal">Cancel</button>
-        <button class="btn primary" type="button"><i class="bi bi-send"></i> Share</button>
+        <button class="btn" type="button" data-close="shareModal">
+          Cancel
+        </button>
+
+        <button class="btn primary" type="submit">
+          <i class="bi bi-send"></i> Share
+        </button>
       </div>
-    </div>
+    </form>
   </div>
+</div>
 </main>
 {% endblock %}
 
