@@ -1,7 +1,9 @@
 from django.urls import path
 from . import views
 
+
 urlpatterns = [
+    #main landing page, showing all teams
     path('', views.teams_list, name='teams_list'), # The directory page
-    path('<slug:team_slug>/', views.team_detail, name='team_detail'), # The individual team page
+    path('<int:user_id>/', views.team_detail, name='team_detail'),
 ]
