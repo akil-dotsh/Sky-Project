@@ -17,7 +17,6 @@ class UserProfile(models.Model):
     office_location = models.TextField(db_column='office_location',blank=True,null=True)
     availability_status = models.TextField(db_column='availability_status',blank=True,null=True)
     team_id = models.TextField(db_column='team_id',blank=True,null=True)
-    department = models.CharField(max_length=255, blank=True, null=True)
     primary_skills = models.TextField(db_column='primary_skill',blank=True,null=True)
     grade_level = models.TextField(
         db_column='grade_level',
