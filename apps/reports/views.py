@@ -2,13 +2,10 @@ import os
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
-from django.utils.formats import date_format
 
-from apps.reports.models import ResourceLink
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
@@ -21,7 +18,7 @@ from reportlab.platypus import (
 )
 
 from apps.dashboard.models import Team
-from .models import Report, JiraProject, JiraBoard,ResourceLink
+from .models import Report, JiraProject, JiraBoard
 
 
 def admin_report(request):
@@ -57,10 +54,6 @@ def admin_report(request):
 
     last_15_reports = reports_queryset[:15]
 
-    share_report_count= ResourceLink.objects.filter(
-        resource_type='report',
-    ).count()
-
     context = {
         "total_reports_count": total_reports_count,
         "scheduled_reports_count": scheduled_reports_count,
@@ -68,7 +61,6 @@ def admin_report(request):
         "status_filter": status_filter,
         "last_15_reports": last_15_reports,
         "teams": Team.objects.all().order_by("team_name"),
-        "share_report_count": share_report_count,
     }
 
     return render(request, "reports/admin_report.html", context)
@@ -119,8 +111,7 @@ def report_generate(request):
 
         # Create safe PDF file name
         safe_team_name = selected_team.team_name.lower().replace(" ", "_")
-        generated_timestamp = timezone.now().strftime("%Y%m%d_%H%M%S")
-        file_name = f"{safe_team_name}_report_{generated_timestamp}.pdf"
+        file_name = f"{safe_team_name}_report.pdf"
 
         # Create media/reports folder if it does not exist
         reports_dir = os.path.join(settings.MEDIA_ROOT, "reports")
@@ -357,90 +348,3 @@ def report_generate(request):
             "teams": teams,
         },
     )
-
-
-def share_report(request):
-    """
-    Share a generated report with one or more teams.
-
-    Creating ResourceLink rows so team members can access
-    the report through their team_id.
-    """
-
-    if request.method == "POST":
-        report_id = request.POST.get("report_id")
-        team_ids = request.POST.getlist("team_ids")
-        permission = request.POST.get("permission")
-        message = request.POST.get("message")
-
-        # Get selected report safely
-        report = get_object_or_404(Report, report_id=report_id)
-
-        # Only share if the report has a generated PDF URL
-        if not report.report_url:
-            messages.error(request, "This report does not have a PDF URL to share.")
-            return redirect("admin_report")
-
-        # Create one ResourceLink record per selected team
-        for team_id in team_ids:
-            ResourceLink.objects.create(
-                resource_type="report",
-                documentation=f"Shared report: {report.report_name}",
-                description=message,
-                resource_value=permission,
-                report_url=report.report_url,
-                created_at=timezone.now().strftime("%Y-%m-%dT%H:%M:%S"),
-                team_id=team_id
-            )
-
-        messages.success(request, "Report shared successfully.")
-
-    return redirect("admin_report")
-
-
-@login_required
-def user_reports(request):
-    """
-    Display reports shared with the logged-in user's team.
-
-    ResourceLink stores shared report links.
-    A normal user can only see reports where their team_id matches
-    ResourceLink.team_id.
-    """
-
-    search_query = request.GET.get("search", "").strip()
-    category_filter = request.GET.get("category", "").strip()
-
-    user_profile = getattr(request.user, "userprofile", None)
-
-    if not user_profile or not user_profile.team_id:
-        shared_reports = ResourceLink.objects.none()
-    else:
-        shared_reports = ResourceLink.objects.filter(
-            resource_type="report",
-            team_id=user_profile.team_id
-        ).order_by("-created_at")
-
-    if search_query:
-        shared_reports = shared_reports.filter(
-            Q(resource_value__icontains=search_query) |
-            Q(description__icontains=search_query)
-        )
-
-    if category_filter:
-        shared_reports = shared_reports.filter(
-            resource_value__icontains=category_filter
-        )
-
-    shared_reports_count = shared_reports.count()
-    last_shared_report = shared_reports.first()
-
-    context = {
-        "shared_reports": shared_reports,
-        "shared_reports_count": shared_reports_count,
-        "last_shared_report": last_shared_report,
-        "search_query": search_query,
-        "category_filter": category_filter,
-    }
-
-    return render(request, "reports/user_reports.html", context)
