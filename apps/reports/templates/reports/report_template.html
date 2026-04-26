@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ report_name }}</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            color: #0f172a;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .header {
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 12px;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            margin: 0;
+            color: #2563eb;
+            font-size: 24px;
+        }
+
+        h2 {
+            margin-top: 26px;
+            color: #1e3a8a;
+            font-size: 17px;
+            border-bottom: 1px solid #dbeafe;
+            padding-bottom: 6px;
+        }
+
+        .sub {
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            border: 1px solid #dbeafe;
+            background: #eff6ff;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .label {
+            color: #64748b;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .value {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        th {
+            width: 30%;
+            text-align: left;
+            background: #f8fafc;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+        }
+
+        td {
+            border: 1px solid #e2e8f0;
+            padding: 8px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 10px;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>{{ report_name }}</h1>
+        <div class="sub">
+            Generated on {{ generated_at }} |
+            Period: {{ from_date }} to {{ to_date }}
+        </div>
+    </div>
+
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="label">Team</div>
+            <div class="value">{{ team.team_name }}</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="label">Team Status</div>
+            <div class="value">{{ team.status }}</div>
+        </div>
+
+        <div class="summary-card">
+            <div class="label">Jira Project</div>
+            <div class="value">
+                {% if jira_project %}
+                    {{ jira_project.project_name }}
+                {% else %}
+                    Not assigned
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <h2>1. Team Information</h2>
+
+    <table>
+        <tr><th>Team Name</th><td>{{ team.team_name }}</td></tr>
+        <tr><th>Status</th><td>{{ team.status }}</td></tr>
+        <tr><th>Purpose</th><td>{{ team.purpose }}</td></tr>
+        <tr><th>Responsibility</th><td>{{ team.responsibility }}</td></tr>
+        <tr><th>Description</th><td>{{ team.description }}</td></tr>
+        <tr><th>Team Email</th><td>{{ team.team_email }}</td></tr>
+        <tr><th>On-call Contact</th><td>{{ team.on_call_contact }}</td></tr>
+        <tr><th>Location</th><td>{{ team.location }}</td></tr>
+        <tr><th>Development Focus Area</th><td>{{ team.development_focus_area }}</td></tr>
+        <tr><th>Key Skills / Technology</th><td>{{ team.key_skills_technology }}</td></tr>
+        <tr><th>Software Owned</th><td>{{ team.software_owned }}</td></tr>
+        <tr><th>Agile Practice</th><td>{{ team.agile_practice }}</td></tr>
+        <tr><th>Daily Standup Time</th><td>{{ team.daily_standup_time }}</td></tr>
+        <tr><th>Concurrent Projects Range</th><td>{{ team.concurrent_projects_range }}</td></tr>
+        <tr><th>Team Wiki URL</th><td>{{ team.team_wiki_url }}</td></tr>
+        <tr><th>Last Reviewed At</th><td>{{ team.last_reviewed_at }}</td></tr>
+        <tr><th>Created At</th><td>{{ team.created_at }}</td></tr>
+        <tr><th>Updated At</th><td>{{ team.updated_at }}</td></tr>
+    </table>
+
+    <h2>2. Jira Project Information</h2>
+
+    {% if jira_project %}
+        <table>
+            <tr><th>Project Name</th><td>{{ jira_project.project_name }}</td></tr>
+            <tr><th>Description</th><td>{{ jira_project.description }}</td></tr>
+            <tr><th>Project Type</th><td>{{ jira_project.project_type }}</td></tr>
+            <tr><th>Status</th><td>{{ jira_project.status }}</td></tr>
+            <tr><th>Created At</th><td>{{ jira_project.created_at }}</td></tr>
+        </table>
+    {% else %}
+        <p>No Jira project is assigned to this team.</p>
+    {% endif %}
+
+    <h2>3. Jira Board Information</h2>
+
+    {% if jira_board %}
+        <table>
+            <tr><th>Board Name</th><td>{{ jira_board.board_name }}</td></tr>
+            <tr><th>Board Type</th><td>{{ jira_board.board_type }}</td></tr>
+            <tr><th>Is Active</th><td>{{ jira_board.is_active }}</td></tr>
+            <tr><th>Created At</th><td>{{ jira_board.created_at }}</td></tr>
+            <tr><th>Updated At</th><td>{{ jira_board.updated_at }}</td></tr>
+        </table>
+    {% else %}
+        <p>No Jira board information is available for this team.</p>
+    {% endif %}
+
+    <h2>4. Recommendation</h2>
+    <p>
+        This report provides a team-level operational and Jira status overview.
+        Teams with inactive status, missing Jira projects, or inactive Jira boards
+        should be reviewed by management.
+    </p>
+
+    <div class="footer">
+        Sky Reporting System — Generated automatically from Team, JiraProject and JiraBoard data.
+    </div>
+</body>
+</html>

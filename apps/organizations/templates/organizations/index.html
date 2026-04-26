@@ -1,16 +1,325 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>My First HTML Page</title>
-</head>
-<body>
-    <h1>Welcome to My Page!</h1>
-    <p>This is a simple HTML paragraph.</p>
-    <ul>
-        <li>First item</li>
-        <li>Second item</li>
-        <li>Third item</li>
-    </ul>
-    <a href="https://www.google.com" target="_blank">Go to Google</a>
-</body>
-</html>
+{% extends "core/base_staff.html" %}
+{% load static %}
+
+{% block title %}Organization Map{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/organizations/index.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="org-header">
+  <div>
+    <h1 class="page-title">Organization Map</h1>
+    <p class="org-note">Browse department leaders, teams and dependencies from sky.db with live filtering.</p>
+  </div>
+
+  <div class="org-actions">
+    <button type="button" id="gridViewBtn" class="active">Grid View</button>
+    <button type="button" id="networkViewBtn">Network View</button>
+    <button type="button" id="exportBtn">Export</button>
+  </div>
+</section>
+
+<section class="org-header secondary">
+  <div class="org-summary">
+    <span class="summary-pill">teams: {{ teams_count }}</span>
+    <span class="summary-pill">dependencies: {{ dependency_count }}</span>
+    <span class="summary-pill">rows: {{ total_rows }}</span>
+  </div>
+
+  <div class="org-search">
+    <i class="bi bi-search"></i>
+    <input id="searchInput" type="search" placeholder="Search teams or dependencies..." value="{{ search_query }}">
+  </div>
+</section>
+
+<div class="org-card org-layout" id="orgCard">
+  <aside class="org-filter-panel">
+    <div class="filter-card">
+      <h3>Filters</h3>
+      <form id="orgFilterForm" method="get">
+        <input type="hidden" name="search" id="searchInputHidden" value="{{ search_query }}">
+
+        <label>Department</label>
+        <select name="department" id="departmentFilter">
+          <option value="">All departments</option>
+          {% for department in departments %}
+          <option value="{{ department }}" {% if department == selected_department %}selected{% endif %}>{{ department }}</option>
+          {% endfor %}
+        </select>
+
+        <label>Team type</label>
+        <select name="team_type" id="teamTypeFilter">
+          <option value="">All team types</option>
+          {% for team_type in team_types %}
+          <option value="{{ team_type }}" {% if team_type == selected_team_type %}selected{% endif %}>{{ team_type }}</option>
+          {% endfor %}
+        </select>
+
+        <label>Dependencies type</label>
+        <select name="dependency_type" id="dependencyTypeFilter">
+          <option value="">All dependencies</option>
+          {% for dependency_type in dependency_types %}
+          <option value="{{ dependency_type }}" {% if dependency_type == selected_dependency_type %}selected{% endif %}>{{ dependency_type }}</option>
+          {% endfor %}
+        </select>
+
+        <button type="submit" class="filter-apply">Apply filters</button>
+      </form>
+    </div>
+  </aside>
+
+  <section class="org-content-panel">
+    <section class="org-table-panel grid-view-panel">
+      <div class="table-header">
+        <div>
+          <h2>Department teams</h2>
+          <p class="org-note">Highlighting selected filters and showing a scrollable table for large datasets.</p>
+        </div>
+        <div class="table-meta">Showing {{ total_rows }} dependency rows</div>
+      </div>
+
+      <div class="table-container">
+        <table class="org-table">
+          <thead>
+            <tr>
+              <th>Department</th>
+              <th>Department Leader</th>
+              <th>Team</th>
+              <th>Dependencies</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+            <tr class="table-row" data-department="{{ row.department }}" data-team-type="{{ row.development_focus_area }}" data-dependency-type="{{ row.dependency_type }}">
+              <td>{{ row.department }}</td>
+              <td>{{ row.department_leader }}</td>
+              <td>{{ row.team_name }}</td>
+              <td>{{ row.dependency_name }}{% if row.dependency_type %} ({{ row.dependency_type }}){% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="4">No department, team or dependency data was found in the database.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="org-network-panel network-view-panel">
+      <div class="network-toolbar">
+        <div>
+          <h2>Network Map</h2>
+          <p class="org-note">Zoom, fullscreen, and reset the organization network view.</p>
+        </div>
+        <div class="network-buttons">
+          <button type="button" id="zoomInBtn"><b>+</b></button>
+          <button type="button" id="zoomOutBtn"><b>-</b></button>
+          <button type="button" id="resetZoomBtn">Default View</button>
+          <button type="button" id="fullscreenBtn">Fullscreen</button>
+        </div>
+      </div>
+
+      <div class="network-stage" id="networkStage">
+        <div class="network-canvas" id="networkCanvas">
+          <div class="network-legend">
+            <span class="legend-item dept">Department</span>
+            <span class="legend-item team">Team</span>
+            <span class="legend-item dep">Dependency</span>
+          </div>
+
+          {% if rows %}
+            <div class="tree-root">
+              <div class="tree-root-card">
+                <div class="tree-root-title">Open Sky</div>
+                <div class="tree-root-subtitle">Department organization chart</div>
+              </div>
+            </div>
+
+            <div class="tree-branches">
+              {% regroup rows by department as department_groups %}
+              {% for department in department_groups %}
+              <div class="tree-branch">
+                <div class="department-node">
+                  <div class="department-title">{{ department.grouper }}</div>
+                  <div class="department-head">Head: {{ department.list.0.department_leader }}</div>
+                </div>
+                <div class="branch-teams">
+                  {% regroup department.list by team_name as team_groups %}
+                  {% for team in team_groups %}
+                  <div class="team-card">
+                    <div class="team-label">{{ team.grouper }}</div>
+                    <div class="team-type">{{ team.list.0.development_focus_area }}</div>
+                    <div class="dependency-tags">
+                      {% for item in team.list %}
+                      <span class="dependency-chip">{{ item.dependency_name }}</span>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="network-empty">No network data available.</div>
+          {% endif %}
+        </div>
+      </div>
+    </section>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+console.log('Script loaded, waiting for DOM...');
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('DOM loaded, starting initialization...');
+  console.log('DOM loaded, starting initialization...');
+  
+  const filterForm = document.getElementById('orgFilterForm');
+  const searchInput = document.getElementById('searchInput');
+  const searchInputHidden = document.getElementById('searchInputHidden');
+  const tableRows = document.querySelectorAll('.table-row');
+  const orgCard = document.getElementById('orgCard');
+  const gridViewBtn = document.getElementById('gridViewBtn');
+  const networkViewBtn = document.getElementById('networkViewBtn');
+  const zoomInBtn = document.getElementById('zoomInBtn');
+  const zoomOutBtn = document.getElementById('zoomOutBtn');
+  const resetZoomBtn = document.getElementById('resetZoomBtn');
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+  const networkStage = document.getElementById('networkStage');
+  const networkCanvas = document.getElementById('networkCanvas');
+  const exportBtn = document.getElementById('exportBtn');
+
+  console.log('Elements found:', {
+    orgCard: !!orgCard,
+    gridViewBtn: !!gridViewBtn,
+    networkViewBtn: !!networkViewBtn,
+    exportBtn: !!exportBtn,
+    networkStage: !!networkStage,
+    networkCanvas: !!networkCanvas
+  });
+
+  let currentScale = 1;
+  const minScale = 0.6;
+  const maxScale = 2.4;
+  const scaleStep = 0.15;
+
+  function setScale(scale) {
+    currentScale = Math.min(maxScale, Math.max(minScale, scale));
+    if (networkCanvas) {
+      networkCanvas.style.transform = `scale(${currentScale})`;
+    }
+  }
+
+  function setActiveView(useNetwork) {
+    console.log('setActiveView called with:', useNetwork);
+    if (!orgCard) {
+      console.log('orgCard not found');
+      return;
+    }
+    
+    // Add visual feedback
+    document.body.style.transition = 'background-color 0.3s ease';
+    
+    if (useNetwork) {
+      orgCard.classList.add('network-mode');
+      if (networkViewBtn) networkViewBtn.classList.add('active');
+      if (gridViewBtn) gridViewBtn.classList.remove('active');
+      document.body.style.backgroundColor = '#f0f8ff'; // Light blue for network view
+      console.log('Switched to network view');
+    } else {
+      orgCard.classList.remove('network-mode');
+      if (gridViewBtn) gridViewBtn.classList.add('active');
+      if (networkViewBtn) networkViewBtn.classList.remove('active');
+      document.body.style.backgroundColor = '#ffffff'; // White for grid view
+      console.log('Switched to grid view');
+    }
+  }
+
+  if (filterForm && searchInput && searchInputHidden) {
+    filterForm.addEventListener('submit', () => {
+      searchInputHidden.value = searchInput.value;
+    });
+  }
+
+  if (gridViewBtn && networkViewBtn) {
+    console.log('Setting up view buttons...');
+    gridViewBtn.addEventListener('click', () => {
+      console.log('Grid view clicked');
+      gridViewBtn.textContent = 'Grid View (Active)';
+      networkViewBtn.textContent = 'Network View';
+      setActiveView(false);
+    });
+    networkViewBtn.addEventListener('click', () => {
+      console.log('Network view clicked');
+      networkViewBtn.textContent = 'Network View (Active)';
+      gridViewBtn.textContent = 'Grid View';
+      setActiveView(true);
+    });
+  } else {
+    console.log('View buttons not found');
+  }
+
+  if (zoomInBtn) {
+    zoomInBtn.addEventListener('click', () => setScale(currentScale + scaleStep));
+  }
+  if (zoomOutBtn) {
+    zoomOutBtn.addEventListener('click', () => setScale(currentScale - scaleStep));
+  }
+  if (resetZoomBtn) {
+    resetZoomBtn.addEventListener('click', () => setScale(1));
+  }
+  if (fullscreenBtn && networkStage) {
+    fullscreenBtn.addEventListener('click', async () => {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else if (networkStage.requestFullscreen) {
+        await networkStage.requestFullscreen();
+      }
+    });
+  }
+
+  if (exportBtn) {
+    console.log('Setting up export button...');
+    exportBtn.addEventListener('click', () => {
+      console.log('Export button clicked');
+      exportBtn.textContent = 'Exporting...';
+      exportBtn.disabled = true;
+      
+      // Create the export URL
+      const urlParams = new URLSearchParams(window.location.search);
+      urlParams.set('export', 'csv');
+      const exportUrl = `${window.location.pathname}?${urlParams.toString()}`;
+      console.log('Export URL:', exportUrl);
+      
+      // Create a temporary link and click it
+      const link = document.createElement('a');
+      link.href = exportUrl;
+      link.download = 'organization_data.csv';
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Reset button
+      setTimeout(() => {
+        exportBtn.textContent = 'Export';
+        exportBtn.disabled = false;
+      }, 1000);
+    });
+  } else {
+    console.log('Export button not found');
+  }
+
+  const hasFilter = new URLSearchParams(window.location.search);
+  if (hasFilter.get('department') || hasFilter.get('team_type') || hasFilter.get('dependency_type') || hasFilter.get('search')) {
+    tableRows.forEach(row => row.classList.add('highlighted'));
+  }
+});
+</script>
+{% endblock %}

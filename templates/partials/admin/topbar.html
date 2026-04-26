@@ -40,7 +40,19 @@
 
         <div class="profile-dropdown">
             <div class="profile-link">
-                <img class="avatar" src="{% static 'img/avatar.jpg' %}" alt="Admin avatar">
+                {% if request.user.userprofile.profile_picture %}
+          <img
+            class="avatar"
+            src="{{ request.user.userprofile.profile_picture }}"
+            alt="User avatar"
+          >
+        {% else %}
+          <img
+            class="avatar"
+            src="{% static 'img/avatar.jpg' %}"
+            alt="Default user avatar"
+          >
+        {% endif %}
                 <span class="profile-status" title="Online"></span>
                 <span>{{ request.user.first_name }}</span>
                 <span class="arrow">▾</span>

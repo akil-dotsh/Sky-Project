@@ -1,4 +1,5 @@
 from django.db import models
+from apps.reports.models import JiraBoard,JiraProject
 
 class Team(models.Model):
     team_id = models.AutoField(primary_key=True)
@@ -50,17 +51,17 @@ class Team(models.Model):
 
     def __str__(self):
         return self.team_name
-'''
+
     jira_project = models.ForeignKey(
         JiraProject,
         on_delete=models.RESTRICT,
         db_column='jira_project_id'
     )
-
+'''
     department = models.ForeignKey(
         Department,
         on_delete=models.RESTRICT,
         db_column='department_id'
     )
-'''
 
+'''

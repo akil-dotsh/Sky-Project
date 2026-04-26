@@ -1,0 +1,466 @@
+{% extends "core/base_management.html" %}
+{% load static %}
+
+{% block title %}Reports & Analytics | Admin{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="{% static 'css/reports/admin-reports.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="content">
+  <!-- FR A7 gate -->
+  <section id="accessDenied" class="card card-pad deny d-none">
+    <div class="deny-row">
+      <div class="deny-icon"><i class="bi bi-shield-lock-fill"></i></div>
+      <div>
+        <h2 class="deny-title">Access denied</h2>
+        <p class="page-sub">Reporting & analytics are available to authorised roles only. (FR A7)</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page content -->
+  <section id="reportsContent">
+    <h1 class="page-title">Reports & Analytics</h1>
+    <p class="page-sub">Generate, review, export and share reports across teams.</p>
+
+    <!-- KPI Cards -->
+    <section class="grid">
+      <div class="card card-pad col-4">
+        <div class="stat-row">
+          <div>
+            <div class="stat-label">Reports Generated (30d)</div>
+            <div class="stat-value">{{ total_reports_count }}</div>
+          </div>
+          <span class="pill blue">Live</span>
+        </div>
+      </div>
+
+      <div class="card card-pad col-4">
+        <div class="stat-row">
+          <div>
+            <div class="stat-label">Scheduled Reports</div>
+            <div class="stat-value">{{ scheduled_reports_count }}</div>
+          </div>
+          <span class="pill blue">Auto</span>
+        </div>
+      </div>
+
+      <div class="card card-pad col-4">
+        <div class="stat-row">
+          <div>
+            <div class="stat-label">Shared with Teams</div>
+            <div class="stat-value">17</div>
+          </div>
+          <span class="pill blue">Teams</span>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card card-pad col-12">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Quick Actions</div>
+            <div class="page-sub">Common reporting operations.</div>
+          </div>
+
+          <div class="btn-row">
+            <button id="btnExportPdfTop" class="btn soft" type="button">
+              <i class="bi bi-filetype-pdf"></i> Export PDF
+            </button>
+            <button id="btnExportXlsTop" class="btn soft" type="button">
+              <i class="bi bi-filetype-xlsx"></i> Export Excel
+            </button>
+            <button class="btn primary" type="button" data-open="shareModal">
+              <i class="bi bi-share"></i> Share
+            </button>
+          </div>
+        </div>
+
+        <div class="action-strip">
+          <a class="action blue" href="#">
+            <p class="a-title">Generate</p>
+            <p class="a-sub">Create a new report</p>
+          </a>
+          <a class="action deep" href="#">
+            <p class="a-title">Dashboards</p>
+            <p class="a-sub">Analytics overview</p>
+          </a>
+          <a class="action sky" href="#">
+            <p class="a-title">Templates</p>
+            <p class="a-sub">Reuse standard packs</p>
+          </a>
+        </div>
+      </div>
+
+      <!-- Two-column block -->
+      <div class="col-12 grid two-col">
+
+        <!-- Generate form -->
+        <div class="card card-pad">
+          <div class="section-title">Generate Report</div>
+          <div class="page-sub" style="margin-top:4px;">Generate a PDF report from Team, JiraProject and JiraBoard data.</div>
+
+          <form class="form" method="POST" action="{% url 'report_generate' %}">
+            {% csrf_token %}
+
+            <label class="label">Report Type</label>
+            <select class="input" name="report_type" required>
+              <option value="Team Health Summary" selected>Team Health Summary</option>
+              <option value="Team Operational & Jira Status Report">Team Operational & Jira Status Report</option>
+              <option value="Dependency Risk">Dependency Risk</option>
+              <option value="Governance & Access">Governance & Access</option>
+              <option value="Messaging & Comms">Messaging & Comms</option>
+              <option value="Custom">Custom (Metrics Picker)</option>
+            </select>
+
+            <label class="label">Department</label>
+            <select class="input" name="department" required>
+              <option value="Engineering" selected>Engineering</option>
+              <option value="Platform">Platform</option>
+              <option value="Product">Product</option>
+            </select>
+
+            <label class="label">Teams</label>
+            <select class="input" name="team_id" required>
+              <option value="">Select Team</option>
+              {% for team in teams %}
+                <option value="{{ team.team_id }}">{{ team.team_name }}</option>
+              {% empty %}
+                <option value="">No teams found</option>
+              {% endfor %}
+            </select>
+
+            <div class="row2">
+              <div>
+                <label class="label">From</label>
+                <input class="input" type="date" name="from_date" value="2026-01-01" required>
+              </div>
+
+              <div>
+                <label class="label">To</label>
+                <input class="input" type="date" name="to_date" value="2026-01-31" required>
+              </div>
+            </div>
+
+            <div class="switch-row">
+              <div>
+                <div style="font-weight:900;">Compare to previous</div>
+                <div class="page-sub">Show delta vs last period</div>
+              </div>
+
+              <label class="switch">
+                <input type="checkbox" name="compare_previous" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div class="row2">
+              <button class="btn primary" type="submit">
+                <i class="bi bi-gear"></i> Generate
+              </button>
+
+              <button class="btn" type="button">
+                <i class="bi bi-clock-history"></i> Schedule
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Reports table -->
+        <div class="card card-pad">
+          <div class="section-head">
+            <div>
+              <div class="section-title">Generated Reports</div>
+              <div class="page-sub">View, export or share reports.</div>
+            </div>
+
+            <form method="get" class="filters" id="reportFilterForm">
+              <input
+                class="input"
+                type="text"
+                name="search"
+                id="searchInput"
+                placeholder="Search reports..."
+                value="{{ search_query }}"
+              >
+
+              <select class="input" name="status" id="statusFilter">
+                <option value="" {% if not status_filter %}selected{% endif %}>All status</option>
+                <option value="Successful" {% if status_filter == "Successful" %}selected{% endif %}>Successful</option>
+                <option value="Running" {% if status_filter == "Running" %}selected{% endif %}>Running</option>
+                <option value="Failed" {% if status_filter == "Failed" %}selected{% endif %}>Failed</option>
+              </select>
+            </form>
+          </div>
+
+          <div class="table-wrap">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Report</th>
+                  <th>Scope</th>
+                  <th>Created</th>
+                  <th>Status</th>
+                  <th class="actions-head">Actions</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {% for report in last_15_reports %}
+                <tr>
+                  <td>
+                    <div class="row-flex">
+                      <img
+                        class="thumb"
+                        src="https://images.unsplash.com/photo-1556761175-4b46a572b786?q=80&w=600&auto=format&fit=crop"
+                        alt="thumb"
+                      >
+                      <div>
+                        <div class="strong">{{ report.report_name }}</div>
+                        <div class="small">{{ report.report_type }}</div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td>
+                    <span class="chip blue">
+                      <i class="bi bi-people"></i>
+                      {{ report.scope }}
+                    </span>
+                  </td>
+
+                  <td class="small">
+                    {{ report.created_at }}
+                  </td>
+
+                  <td>
+                    {% if report.status == "Successful" %}
+                      <span class="chip green">
+                        <i class="bi bi-check2-circle"></i> {{ report.status }}
+                      </span>
+                    {% elif report.status == "Running" %}
+                      <span class="chip gray">
+                        <i class="bi bi-arrow-repeat"></i> {{ report.status }}
+                      </span>
+                    {% elif report.status == "Failed" %}
+                      <span class="chip red">
+                        <i class="bi bi-x-circle"></i> {{ report.status }}
+                      </span>
+                    {% else %}
+                      <span class="chip">
+                        {{ report.status }}
+                      </span>
+                    {% endif %}
+                  </td>
+
+                  <td class="actions-cell">
+                    <div class="action-buttons">
+                      <button class="btn" type="button">
+                        <i class="bi bi-eye"></i> View
+                      </button>
+
+                      {% if report.status == "Successful" %}
+                        {% if report.report_url %}
+                          <a class="btn soft icon-btn" href="{{ report.report_url }}" target="_blank" title="Download PDF">
+                            <i class="bi bi-filetype-pdf"></i>
+                          </a>
+                        {% else %}
+                          <button class="btn soft icon-btn" type="button" disabled title="PDF not available">
+                            <i class="bi bi-filetype-pdf"></i>
+                          </button>
+                        {% endif %}
+
+                        <button class="btn soft icon-btn" type="button">
+                          <i class="bi bi-filetype-xlsx"></i>
+                        </button>
+
+                        <button class="btn primary icon-btn" type="button" data-open="shareModal">
+                          <i class="bi bi-share"></i>
+                        </button>
+                      {% elif report.status == "Running" %}
+                        <button class="btn soft icon-btn" type="button" disabled>
+                          <i class="bi bi-filetype-pdf"></i>
+                        </button>
+
+                        <button class="btn soft icon-btn" type="button" disabled>
+                          <i class="bi bi-filetype-xlsx"></i>
+                        </button>
+
+                        <button class="btn primary icon-btn" type="button" disabled>
+                          <i class="bi bi-share"></i>
+                        </button>
+                      {% elif report.status == "Failed" %}
+                        <button class="btn icon-btn" type="button">
+                          <i class="bi bi-arrow-repeat"></i>
+                        </button>
+
+                        <button class="btn danger icon-btn" type="button">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+
+                {% empty %}
+                <tr>
+                  <td colspan="5" class="small empty-row">
+                    No generated reports found.
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </section>
+
+  <!-- Share Modal -->
+  <div class="modal" id="shareModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close="shareModal"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Share Report">
+      <div class="modal-head">
+        <div>
+          <div class="modal-title">Share Report with Team</div>
+          <div class="page-sub">Dummy modal (wire to messaging later).</div>
+        </div>
+        <button class="btn" type="button" data-close="shareModal"><i class="bi bi-x-lg"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <div class="row2">
+          <div>
+            <label class="label">Select report</label>
+            <select class="input">
+              {% for report in last_15_reports %}
+                <option>{{ report.report_name }}</option>
+              {% empty %}
+                <option>No reports available</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label class="label">Share to teams</label>
+            <select class="input" multiple size="4">
+              {% for team in teams %}
+                <option>{{ team.team_name }}</option>
+              {% empty %}
+                <option>No teams found</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <label class="label">Permissions</label>
+        <div class="perm-row">
+          <label class="perm"><input type="radio" name="perm" checked> View only</label>
+          <label class="perm"><input type="radio" name="perm"> View + Comment</label>
+          <label class="perm"><input type="radio" name="perm"> View + Export</label>
+        </div>
+
+        <label class="label">Message optional</label>
+        <textarea class="input" rows="3" placeholder="Add a note for the team..."></textarea>
+
+        <div class="hint">
+          <i class="bi bi-info-circle"></i>
+          Sharing can create a notification and be logged in Audit Trail.
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn" type="button" data-close="shareModal">Cancel</button>
+        <button class="btn primary" type="button"><i class="bi bi-send"></i> Share</button>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  window.APP_CONTEXT = {
+    role: "admin",
+    canAccessReports: true,
+    canExport: true
+  };
+
+  const accessDenied = document.getElementById('accessDenied');
+  const reportsContent = document.getElementById('reportsContent');
+
+  if (!window.APP_CONTEXT.canAccessReports) {
+    accessDenied.classList.remove('d-none');
+    reportsContent.classList.add('d-none');
+  }
+
+  const exportButtons = [
+    document.getElementById('btnExportPdfTop'),
+    document.getElementById('btnExportXlsTop')
+  ].filter(Boolean);
+
+  if (!window.APP_CONTEXT.canExport) {
+    exportButtons.forEach(btn => {
+      btn.disabled = true;
+      btn.title = "Export available to authorised roles only (FR A8)";
+    });
+  }
+
+  function openModal(id) {
+    const modal = document.getElementById(id);
+
+    if (!modal) {
+      return;
+    }
+
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+
+    if (!modal) {
+      return;
+    }
+
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  document.querySelectorAll('[data-open]').forEach(btn => {
+    btn.addEventListener('click', () => openModal(btn.getAttribute('data-open')));
+  });
+
+  document.querySelectorAll('[data-close]').forEach(btn => {
+    btn.addEventListener('click', () => closeModal(btn.getAttribute('data-close')));
+  });
+
+  const reportFilterForm = document.getElementById('reportFilterForm');
+  const searchInput = document.getElementById('searchInput');
+  const statusFilter = document.getElementById('statusFilter');
+
+  let searchTimeout;
+
+  if (searchInput && reportFilterForm) {
+    searchInput.addEventListener('input', function () {
+      clearTimeout(searchTimeout);
+
+      searchTimeout = setTimeout(() => {
+        reportFilterForm.submit();
+      }, 400);
+    });
+  }
+
+  if (statusFilter && reportFilterForm) {
+    statusFilter.addEventListener('change', function () {
+      reportFilterForm.submit();
+    });
+  }
+</script>
+{% endblock %}
