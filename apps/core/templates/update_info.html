@@ -33,16 +33,40 @@
         <span id="modeBadge" class="badge badge-view">View Mode</span>
       </div>
 
-      <div class="profile-picture-section">
-        <img id="profilePreview"
-             src="{% static 'img/avatar.jpg' %}"
-             alt="Profile Picture" />
+        <div class="profile-picture-section">
+          {% if profile.profile_picture %}
+            <img
+              id="profilePreview"
+              src="{{ profile.profile_picture }}"
+              alt="Profile Picture"
+            />
+          {% else %}
+            <img
+              id="profilePreview"
+              src="{% static 'img/avatar.jpg' %}"
+              alt="Profile Picture"
+            />
+          {% endif %}
 
         <div class="profile-picture-actions">
-          <label id="changePicLabel" class="btn-secondary disabled" for="profileImage" aria-disabled="true">
+          <label
+            id="changePicLabel"
+            class="btn-secondary disabled"
+            for="profileImage"
+            aria-disabled="true"
+          >
             Change Picture
           </label>
-          <input id="profileImage" name="profile_image" type="file" accept="image/*" hidden disabled />
+
+          <input
+            id="profileImage"
+            name="profile_picture"
+            form="profileForm"
+            type="file"
+            accept="image/*"
+            hidden
+            disabled
+          />
         </div>
       </div>
 
@@ -204,12 +228,15 @@
   ];
 
   let originalValues = {};
+  let originalPreviewSrc = preview ? preview.src : "";
 
   function enterEditMode() {
     originalValues = {};
+    originalPreviewSrc = preview ? preview.src : "";
 
     editableFields.forEach((field) => {
       if (!field) return;
+
       originalValues[field.id] = field.value;
       field.disabled = false;
     });
@@ -258,6 +285,10 @@
       profileImage.value = "";
     }
 
+    if (restoreValues && preview) {
+      preview.src = originalPreviewSrc;
+    }
+
     if (changePicLabel) {
       changePicLabel.classList.add("disabled");
       changePicLabel.setAttribute("aria-disabled", "true");
@@ -285,6 +316,7 @@
   if (cancelBtn) {
     cancelBtn.addEventListener("click", function () {
       exitEditMode(true);
+
       if (statusMsg) {
         statusMsg.classList.add("hidden");
       }
@@ -310,7 +342,10 @@
   if (profileImage) {
     profileImage.addEventListener("change", function (event) {
       const file = event.target.files && event.target.files[0];
-      if (!file || !preview) return;
+
+      if (!file || !preview) {
+        return;
+      }
 
       preview.src = URL.createObjectURL(file);
     });
