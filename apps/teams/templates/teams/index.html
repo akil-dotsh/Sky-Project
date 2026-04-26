@@ -1,4 +1,4 @@
-{% extends "layout/../../../core/base_staff.html" %}
+{% extends "core/base_staff.html" %}
 {% load static %}
 
 {% block title %}Teams Management{% endblock %}
@@ -16,21 +16,22 @@
         <div>
             <div class="stat-label"
                 style="color: var(--primary); font-weight: bold; font-size: 0.75rem; text-transform: uppercase;">
-                {{ team.department }}
+                {{ team.department|default:"No Department" }}
             </div>
 
-            <h3 style="margin-top: 10px;">{{ team.name }}</h3>
+            <h3 style="margin-top: 10px;">{{ team.team_id }}</h3>
 
             <p style="font-size: 0.9rem; color: var(--text);">
-                <strong>Lead:</strong> {{ team.leader }}
+                <strong>Team Leader:</strong> {{ team.user.get_full_name|default:team.user.username }}
             </p>
 
             <p style="font-size: 0.8rem; color: var(--muted);">
-                <em>{{ team.tech_stack|truncatechars:80 }}</em>
+                <em>{{ team.primary_skills|truncatechars:80|default:"No skills listed" }}</em>
             </p>
         </div>
 
-        <a href="{% url 'team_detail' team.slug %}" class="action blue" style="text-align: center; margin-top: 15px;">
+        <a href="{% url 'team_detail' team.user.id %}" class="action blue"
+            style="text-align: center; margin-top: 15px;">
             View Team Details
         </a>
     </div>
