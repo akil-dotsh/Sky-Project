@@ -1,0 +1,242 @@
+{% extends "core/base_staff.html" %}
+{% load static %}
+
+{% block title %}Shared Reports | User{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/reports/admin-reports.css' %}">
+{% endblock %}
+
+{% block content %}
+<main class="content">
+
+  <!-- Shows only if access is restricted later -->
+  <section id="accessDenied" class="card card-pad deny d-none">
+    <div class="deny-row">
+      <div class="deny-icon">
+        <i class="bi bi-shield-lock-fill"></i>
+      </div>
+
+      <div>
+        <h2 class="deny-title">Access denied</h2>
+        <p class="page-sub">Reporting is available to authorised users only.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="reportsContent">
+    <h1 class="page-title">Shared Reports</h1>
+    <p class="page-sub">
+      View reports generated and shared by administrators. View-only access.
+    </p>
+
+    <section class="grid">
+
+      <!-- Summary cards -->
+      <div class="card card-pad col-4">
+        <div class="stat-row">
+          <div>
+            <div class="stat-label">Shared with you</div>
+            <div class="stat-value">{{ shared_reports_count }}</div>
+          </div>
+
+          <span class="pill blue">Inbox</span>
+        </div>
+      </div>
+
+      <div class="card card-pad col-4">
+        <div class="stat-row">
+          <div>
+            <div class="stat-label">Unread updates</div>
+            <div class="stat-value">0</div>
+          </div>
+
+          <span class="pill blue">Alerts</span>
+        </div>
+      </div>
+
+      <div class="card card-pad col-4">
+        <div class="stat-row">
+          <div>
+            <div class="stat-label">Last shared</div>
+
+            <div class="stat-value">
+              {% if last_shared_report %}
+                {{ last_shared_report.created_at }}
+              {% else %}
+                None
+              {% endif %}
+            </div>
+          </div>
+
+          <span class="pill blue">Recent</span>
+        </div>
+      </div>
+
+      <!-- Shared reports table -->
+      <div class="card card-pad col-12">
+        <div class="section-head">
+          <div>
+            <div class="section-title">Reports shared by Admin</div>
+            <div class="page-sub">You can view only. Export is restricted.</div>
+          </div>
+
+          <form method="get" class="filters" id="userReportFilterForm">
+            <input
+              class="input"
+              type="text"
+              name="search"
+              id="userReportSearch"
+              placeholder="Search..."
+              value="{{ search_query }}"
+            >
+
+            <select class="input" name="category" id="userReportCategory">
+              <option value="" {% if not category_filter %}selected{% endif %}>All categories</option>
+              <option value="Team Health" {% if category_filter == "Team Health" %}selected{% endif %}>Team Health</option>
+              <option value="Delivery" {% if category_filter == "Delivery" %}selected{% endif %}>Delivery</option>
+              <option value="Dependency" {% if category_filter == "Dependency" %}selected{% endif %}>Dependencies</option>
+              <option value="Governance" {% if category_filter == "Governance" %}selected{% endif %}>Governance</option>
+              <option value="Messaging" {% if category_filter == "Messaging" %}selected{% endif %}>Messaging</option>
+            </select>
+          </form>
+        </div>
+
+        <div class="table-wrap">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Report</th>
+                <th>Message</th>
+                <th>Shared</th>
+                <th>Access</th>
+                <th style="text-align:right;">Action</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {% for resource in shared_reports %}
+              <tr>
+                <td>
+                  <div class="row-flex">
+                    <img
+                      class="thumb"
+                      src="https://images.unsplash.com/photo-1556761175-4b46a572b786?q=80&w=600&auto=format&fit=crop"
+                      alt="Report thumbnail"
+                    >
+
+                    <div>
+                      <div class="strong">
+                        {{ resource.resource_value }}
+                      </div>
+
+                      <div class="small">
+                        Read-only • PDF snapshot
+                      </div>
+                    </div>
+                  </div>
+                </td>
+
+                <td class="small">
+                  {{ resource.description|default:"No message provided." }}
+                </td>
+
+                <td class="small">
+                  {{ resource.created_at }}
+                </td>
+
+                <td>
+                  <span class="chip gray">
+                    <i class="bi bi-eye"></i> View only
+                  </span>
+                </td>
+
+                <td class="actions-cell">
+                  {% if resource.report_url %}
+                    <a
+                      class="btn"
+                      href="{{ resource.report_url }}"
+                      target="_blank"
+                      style="text-decoration:none; color:#2563eb;"
+                    >
+                      <i class="bi bi-eye"></i> View
+                    </a>
+                  {% else %}
+                    <button class="btn" type="button" disabled>
+                      <i class="bi bi-eye"></i> View
+                    </button>
+                  {% endif %}
+
+                  <button class="btn soft" type="button" disabled title="Export restricted">
+                    <i class="bi bi-filetype-pdf"></i>
+                  </button>
+
+                  <button class="btn soft" type="button" disabled title="Export restricted">
+                    <i class="bi bi-filetype-xlsx"></i>
+                  </button>
+                </td>
+              </tr>
+
+              {% empty %}
+              <tr>
+                <td colspan="5" class="small empty-row">
+                  No reports have been shared with your team yet.
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="hint-line">
+          <i class="bi bi-shield-lock"></i>
+          Export is disabled for your role. Contact an admin if you need PDF or Excel downloads.
+        </div>
+      </div>
+
+    </section>
+  </section>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Page-level access settings for normal report users
+  window.APP_CONTEXT = {
+    role: "user",
+    canAccessReports: true,
+    canExport: false
+  };
+
+  const accessDenied = document.getElementById("accessDenied");
+  const reportsContent = document.getElementById("reportsContent");
+
+  if (!window.APP_CONTEXT.canAccessReports) {
+    accessDenied.classList.remove("d-none");
+    reportsContent.classList.add("d-none");
+  }
+
+  // Auto-submit filters
+  const userReportFilterForm = document.getElementById("userReportFilterForm");
+  const userReportSearch = document.getElementById("userReportSearch");
+  const userReportCategory = document.getElementById("userReportCategory");
+
+  let searchTimer;
+
+  if (userReportSearch && userReportFilterForm) {
+    userReportSearch.addEventListener("input", function () {
+      clearTimeout(searchTimer);
+
+      searchTimer = setTimeout(function () {
+        userReportFilterForm.submit();
+      }, 400);
+    });
+  }
+
+  if (userReportCategory && userReportFilterForm) {
+    userReportCategory.addEventListener("change", function () {
+      userReportFilterForm.submit();
+    });
+  }
+</script>
+{% endblock %}
