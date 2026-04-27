@@ -9,111 +9,130 @@
 
   <div class="sched-agenda-list">
     {% for m in meetings %}
-      <article class="sched-agenda-item" id="m-{{ m.meeting_id }}">
-        <div class="sched-agenda-item-head">
-          <h3 class="sched-agenda-item-title">
-            {{ m.title }}
-            <span class="sched-type-badge {% if m.meeting_type == 'Team' %}team{% else %}individual{% endif %}">
-              {{ m.meeting_type }}
-            </span>
-          </h3>
-          <div class="sched-agenda-item-actions">
-            <a class="sched-icon-btn edit" href="{% url 'schedule:edit' m.meeting_id %}" aria-label="Edit meeting">
-              <i class="bi bi-pencil"></i>
-            </a>
-            <form method="post" action="{% url 'schedule:delete' m.meeting_id %}" class="inline-form"
-                  onsubmit="return confirm('Delete this meeting?');">
-              {% csrf_token %}
-              <input type="hidden" name="next" value="{{ request.get_full_path }}">
-              <button type="submit" class="sched-icon-btn danger" aria-label="Delete meeting">
-                <i class="bi bi-trash"></i>
-              </button>
-            </form>
-          </div>
+    <article class="sched-agenda-item" id="m-{{ m.meeting_id }}">
+      <div class="sched-agenda-item-head">
+        <h3 class="sched-agenda-item-title">
+          {{ m.title }}
+          <span class="sched-type-badge {% if m.meeting_type == 'Team' %}team{% else %}individual{% endif %}">
+            {{ m.meeting_type }}
+          </span>
+        </h3>
+        <div class="sched-agenda-item-actions">
+          <a class="sched-icon-btn edit" href="{% url 'schedule:edit' m.meeting_id %}" aria-label="Edit meeting">
+            <i class="bi bi-pencil"></i>
+          </a>
+          <form method="post" action="{% url 'schedule:delete' m.meeting_id %}" class="inline-form"
+            onsubmit="return confirm('Delete this meeting?');">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button type="submit" class="sched-icon-btn danger" aria-label="Delete meeting">
+              <i class="bi bi-trash"></i>
+            </button>
+          </form>
         </div>
-
-        <div class="sched-agenda-grid">
-          <div class="sched-agenda-tile">
-            <div class="sched-agenda-tile-icon purple"><i class="bi bi-calendar"></i></div>
-            <div>
-              <div class="sched-agenda-tile-label">Date</div>
-              <div class="sched-agenda-tile-value">{{ m.start_datetime|date:"l, F j, Y" }}</div>
-            </div>
-          </div>
-          <div class="sched-agenda-tile">
-            <div class="sched-agenda-tile-icon cyan"><i class="bi bi-clock"></i></div>
-            <div>
-              <div class="sched-agenda-tile-label">Time</div>
-              <div class="sched-agenda-tile-value">{{ m.start_datetime|date:"H:i" }} – {{ m.end_datetime|date:"H:i" }}</div>
-            </div>
-          </div>
-          <div class="sched-agenda-tile">
-            <div class="sched-agenda-tile-icon violet">
-              <i class="bi {% if m.meeting_type == 'Team' %}bi-people{% else %}bi-person{% endif %}"></i>
-            </div>
-            <div>
-              <div class="sched-agenda-tile-label">
-                {% if m.meeting_type == 'Team' %}Team{% else %}Recipient{% endif %}
-              </div>
-              <div class="sched-agenda-tile-value">
-                {% if m.meeting_type == 'Team' %}
-                  {{ m.team.team_name|default:"—" }}
-                {% else %}
-                  {% if m.receiver %}{{ m.receiver.get_full_name|default:m.receiver.username }}{% else %}—{% endif %}
-                {% endif %}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {% if m.location or m.meeting_link %}
-          <div class="sched-agenda-meta-row">
-            {% if m.location %}
-              <span class="sched-agenda-meta-item"><i class="bi bi-geo-alt"></i> {{ m.location }}</span>
-            {% endif %}
-            {% if m.meeting_link %}
-              <a class="sched-agenda-meta-item link" href="{{ m.meeting_link }}" target="_blank" rel="noopener">
-                <i class="bi bi-link-45deg"></i> Join meeting
-              </a>
-            {% endif %}
-          </div>
-        {% endif %}
-
-        <div class="sched-agenda-notes">
-          <div class="sched-agenda-notes-label"><span class="dot"></span> AGENDA</div>
-          <p class="sched-agenda-notes-body">{{ m.agenda|linebreaksbr }}</p>
-        </div>
-
-        {% with parts=m.participants.all %}
-          {% if parts %}
-            <div class="sched-agenda-participants">
-              <div class="sched-agenda-participants-label"><i class="bi bi-people"></i> Participants</div>
-              <div class="sched-agenda-participants-list">
-                {% for p in parts %}
-                  <span class="sched-participant-chip status-{{ p.join_status|lower|cut:' ' }}">
-                    {{ p.user.get_full_name|default:p.user.username }}
-                    <span class="sched-participant-status">{{ p.join_status }}</span>
-                  </span>
-                {% endfor %}
-              </div>
-            </div>
-          {% endif %}
-        {% endwith %}
-
-        <div class="sched-agenda-footer">
-          <i class="bi bi-person"></i>
-          Organised by
-          <strong>{{ m.organiser.get_full_name|default:m.organiser.username }}</strong>
-          on {{ m.created_at|date:"M j, Y" }}
-        </div>
-      </article>
-    {% empty %}
-      <div class="sched-agenda-empty">
-        <div class="sched-agenda-empty-icon"><i class="bi bi-calendar2-x"></i></div>
-        <div class="sched-agenda-empty-title">No meetings scheduled yet</div>
-        <div class="sched-agenda-empty-sub">Click <strong>Schedule Meeting</strong> to add your first meeting.</div>
       </div>
+
+      <div class="sched-agenda-grid">
+        <div class="sched-agenda-tile">
+          <div class="sched-agenda-tile-icon purple"><i class="bi bi-calendar"></i></div>
+          <div>
+            <div class="sched-agenda-tile-label">Date</div>
+            <div class="sched-agenda-tile-value">{{ m.start_datetime|date:"l, F j, Y" }}</div>
+          </div>
+        </div>
+        <div class="sched-agenda-tile">
+          <div class="sched-agenda-tile-icon cyan"><i class="bi bi-clock"></i></div>
+          <div>
+            <div class="sched-agenda-tile-label">Time</div>
+            <div class="sched-agenda-tile-value">{{ m.start_datetime|date:"H:i" }} – {{ m.end_datetime|date:"H:i" }}
+            </div>
+          </div>
+        </div>
+        <div class="sched-agenda-tile">
+          <div class="sched-agenda-tile-icon violet">
+            <i class="bi {% if m.meeting_type == 'Team' %}bi-people{% else %}bi-person{% endif %}"></i>
+          </div>
+          <div>
+            <div class="sched-agenda-tile-label">
+              {% if m.meeting_type == 'Team' %}Team{% else %}Recipient{% endif %}
+            </div>
+            <div class="sched-agenda-tile-value">
+              {% if m.meeting_type == 'Team' %}
+              {{ m.team.team_name|default:"—" }}
+              {% else %}
+              {% if m.receiver %}{{ m.receiver.get_full_name|default:m.receiver.username }}{% else %}—{% endif %}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% if m.location or m.meeting_link %}
+      <div class="sched-agenda-meta-row">
+        {% if m.location %}
+        <span class="sched-agenda-meta-item"><i class="bi bi-geo-alt"></i> {{ m.location }}</span>
+        {% endif %}
+        {% if m.meeting_link %}
+        <a class="sched-agenda-meta-item link" href="{{ m.meeting_link }}" target="_blank" rel="noopener">
+          <i class="bi bi-link-45deg"></i> Join meeting
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+
+      <div class="sched-agenda-notes">
+        <div class="sched-agenda-notes-label"><span class="dot"></span> AGENDA</div>
+        <p class="sched-agenda-notes-body">{{ m.agenda|linebreaksbr }}</p>
+      </div>
+
+      {% with parts=m.participants.all %}
+      {% if parts %}
+      <div class="sched-agenda-participants">
+        <div class="sched-agenda-participants-label"><i class="bi bi-people"></i> Participants</div>
+        <div class="sched-agenda-participants-list">
+          {% for p in parts %}
+          <span class="sched-participant-chip status-{{ p.join_status|lower|cut:' ' }}">
+            {{ p.user.get_full_name|default:p.user.username }}
+            <span class="sched-participant-status">{{ p.join_status }}</span>
+          </span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+      {% endwith %}
+
+      <div class="sched-agenda-footer">
+        <i class="bi bi-person"></i>
+        Organised by
+        <strong>{{ m.organiser.get_full_name|default:m.organiser.username }}</strong>
+        on {{ m.created_at|date:"M j, Y" }}
+      </div>
+    </article>
+    {% empty %}
+    <div class="sched-agenda-empty">
+      <div class="sched-agenda-empty-icon"><i class="bi bi-calendar2-x"></i></div>
+      <div class="sched-agenda-empty-title">No meetings scheduled yet</div>
+      <div class="sched-agenda-empty-sub">Click <strong>Schedule Meeting</strong> to add your first meeting.</div>
+    </div>
     {% endfor %}
   </div>
 </section>
+
+<script>
+  // Run this when the agenda page loads
+  window.onload = function () {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    // Match these IDs to the IDs in the schedule form
+    if (urlParams.has('date')) {
+      document.querySelector('input[name="date"]').value = urlParams.get('date');
+    }
+    if (urlParams.has('time')) {
+      document.querySelector('input[name="time"]').value = urlParams.get('time');
+    }
+    if (urlParams.has('description')) {
+      document.querySelector('textarea[name="description"]').value = urlParams.get('description');
+    }
+  };
+</script>
 {% endblock %}

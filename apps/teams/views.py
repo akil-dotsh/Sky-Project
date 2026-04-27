@@ -28,6 +28,7 @@ def team_detail(request, user_id):
     members = UserProfile.objects.filter(team_id=profile.team_id)
     #connects dependencies to their respective team leader
     raw_deps = Dependency.objects.filter(name__iexact=team_name)
+    repo = profile.repositories.first()
 
     processed_deps = []
     for dep in raw_deps:
@@ -51,6 +52,7 @@ def team_detail(request, user_id):
         'team_members': members,
         'dependencies':processed_deps,
         'focus_list': focus_list,
+        'repo': repo,
     })
 
 #Management view, allows to update the team bio

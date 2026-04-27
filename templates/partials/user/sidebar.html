@@ -13,7 +13,7 @@
   <!-- USER MENU (kept exactly, only paths can be updated later) -->
   <nav class="nav">
     <a href="{% url 'staff_dashboard' %}"><i class="bi bi-speedometer2"></i>Dashboard</a>
-    <a href="#"><i class="bi bi-people"></i>Teams</a>
+    <a href="{% url 'teams_list' %}"><i class="bi bi-people"></i>Teams</a>
     <a href="#"><i class="bi bi-diagram-3"></i>Organisation</a>
     <a href="#"><i class="bi bi-chat-dots"></i>Messages</a>
     <a href="{% url 'schedule:monthly' %}"><i class="bi bi-calendar2-week"></i>Schedule</a>
@@ -22,16 +22,16 @@
 
   <div class="sidebar-footer">
     <span class="role-chip">
-        {% if 'Team Leader' in user_groups  %}
-            Team Leader
-            {% else %}
-            Developer
+      {% if 'Team Leader' in user_groups %}
+      Team Leader
+      {% else %}
+      Developer
 
-        {% endif %}
+      {% endif %}
     </span>
-        <span class="status-chip status-online">
-    <span class="status-dot"></span>
-       {{ profile.availability_status|default:"Online" }}
+    <span class="status-chip status-online">
+      <span class="status-dot"></span>
+      {{ profile.availability_status|default:"Online" }}
     </span>
   </div>
 </aside>

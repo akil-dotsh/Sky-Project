@@ -48,6 +48,7 @@ def run_import():
                     name=team_name,
                     defaults={
                         'dept_head': row.get('Department Head', 'TBD'), 
+                        
                     }
                 )
                 

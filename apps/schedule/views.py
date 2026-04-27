@@ -160,6 +160,7 @@ def weekly_view(request):
 def agenda_view(request):
     ctx = _base_context(request, 'agenda')
     meetings = Meeting.objects.all().order_by('start_datetime')
+    
     ctx.update({
         'meetings': meetings,
         'meeting_count': meetings.count(),
