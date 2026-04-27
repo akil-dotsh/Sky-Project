@@ -28,7 +28,6 @@
         </div>
     </div>
 
-    {% block extra_js %}
     <script>
         const app = document.getElementById('app');
         const sidebar = document.getElementById('sidebar');
@@ -45,10 +44,10 @@
         if (menuToggle) {
             menuToggle.addEventListener('click', () => {
                 if (isMobile()) {
-                    sidebar.classList.toggle('active');
-                    overlay.classList.toggle('active');
+                    if (sidebar) sidebar.classList.toggle('active');
+                    if (overlay) overlay.classList.toggle('active');
                 } else {
-                    app.classList.toggle('is-collapsed');
+                    if (app) app.classList.toggle('is-collapsed');
                 }
             });
         }
@@ -57,21 +56,31 @@
             overlay.addEventListener('click', () => {
                 if (sidebar) sidebar.classList.remove('active');
                 overlay.classList.remove('active');
-                if (notifDropdown) notifDropdown.classList.remove('active');
+
+                if (notifDropdown) {
+                    notifDropdown.classList.remove('active');
+                }
             });
         }
 
-        if (notifToggle) {
-            notifToggle.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (notifDropdown) notifDropdown.classList.toggle('active');
+        if (notifToggle && notifDropdown) {
+            notifToggle.addEventListener('click', (event) => {
+                event.stopPropagation();
+                notifDropdown.classList.toggle('active');
+            });
+
+            notifDropdown.addEventListener('click', (event) => {
+                event.stopPropagation();
             });
         }
 
         document.addEventListener('click', () => {
-            if (notifDropdown) notifDropdown.classList.remove('active');
+            if (notifDropdown) {
+                notifDropdown.classList.remove('active');
+            }
         });
     </script>
-    {% endblock %}
+
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

@@ -3,12 +3,11 @@ import os
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
-from django.utils.formats import date_format
 
-from apps.reports.models import ResourceLink
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet
@@ -21,7 +20,105 @@ from reportlab.platypus import (
 )
 
 from apps.dashboard.models import Team
-from .models import Report, JiraProject, JiraBoard,ResourceLink
+from .models import (
+    Report,
+    JiraProject,
+    JiraBoard,
+    ResourceLink,
+    AuditLog,
+    Notification,
+    UserNotification,
+)
+
+
+def get_management_notification_users():
+    """
+    Return users who should receive all system/audit notifications.
+
+    Admin users are identified by is_superuser=True.
+    Department Heads are identified by the 'Department Head' group.
+    """
+
+    return (
+        User.objects
+        .filter(
+            Q(is_superuser=True) |
+            Q(groups__name="Department Head"),
+            is_active=True
+        )
+        .distinct()
+    )
+
+
+def create_notification_for_users(created_by, title, message, notification_type, link_url, receivers):
+    """
+    Create one Notification record and one USER_NOTIFICATION record per receiver.
+
+    Notification.created_by = the user who generated/created the notification.
+    UserNotification.user = the user who receives the notification.
+    """
+
+    if created_by is None:
+        return None
+
+    now_text = timezone.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+    notification = Notification.objects.create(
+        created_by=created_by,
+        title=title,
+        message=message,
+        notification_type=notification_type,
+        link_url=link_url,
+        created_at=now_text,
+    )
+
+    for receiver in receivers:
+        receiver_time = timezone.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+        UserNotification.objects.create(
+            notification=notification,
+            user=receiver,
+            date=receiver_time,
+            delivered_at=receiver_time,
+            delivery_status="Queued",
+            read_at=None,
+        )
+
+    return notification
+
+
+def create_audit_log(request, entity_name, action, change_summary):
+    """
+    Create an audit record for important actions performed in the custom dashboard.
+
+    Also creates an audit notification for Admin and Department Head users only.
+    Team Leaders and Developers do not receive audit notifications unless something
+    is directly shared with them.
+    """
+
+    actor = request.user if request.user.is_authenticated else None
+
+    audit_log = AuditLog.objects.create(
+        entity_name=entity_name,
+        action=action,
+        changed_by_name=actor.get_full_name() or actor.username if actor else "System",
+        change_summary=change_summary,
+        user=actor,
+    )
+
+    if actor:
+        management_users = get_management_notification_users()
+
+        create_notification_for_users(
+            created_by=actor,
+            title=f"Audit event: {action}",
+            message=f"{audit_log.changed_by_name} performed {action} on {entity_name}. {change_summary}",
+            notification_type="Audit",
+            link_url="/report/notifications/",
+            receivers=management_users,
+        )
+
+    return audit_log
 
 
 def admin_report(request):
@@ -57,8 +154,8 @@ def admin_report(request):
 
     last_15_reports = reports_queryset[:15]
 
-    share_report_count= ResourceLink.objects.filter(
-        resource_type='report',
+    share_report_count = ResourceLink.objects.filter(
+        resource_type="report",
     ).count()
 
     context = {
@@ -78,19 +175,13 @@ def report_generate(request):
     """
     Generate a PDF report using ReportLab.
 
-    Note:
     Team is connected to JiraProject using Team.jira_project_id.
     JiraProject is connected to JiraBoard using JiraProject.jiraBoard_id.
-
-    Relationship:
-    Team.jira_project_id -> JiraProject.jira_project_id
-    JiraProject.jiraBoard_id -> JiraBoard.jiraBoard_id
     """
 
     teams = Team.objects.all().order_by("team_name")
 
     if request.method == "POST":
-        # Read submitted form values
         report_type = request.POST.get("report_type")
         department = request.POST.get("department")
         team_id = request.POST.get("team_id")
@@ -98,10 +189,8 @@ def report_generate(request):
         to_date = request.POST.get("to_date")
         compare_previous = request.POST.get("compare_previous") == "on"
 
-        # Get selected team safely
         selected_team = get_object_or_404(Team, team_id=team_id)
 
-        # Get Jira project connected to the selected team
         jira_project = None
 
         if selected_team.jira_project_id:
@@ -109,7 +198,6 @@ def report_generate(request):
                 jira_project_id=selected_team.jira_project_id
             ).first()
 
-        # Get Jira board connected to the Jira project
         jira_board = None
 
         if jira_project:
@@ -117,24 +205,15 @@ def report_generate(request):
                 jiraBoard_id=jira_project.jiraBoard_id
             ).first()
 
-        # Create safe PDF file name
         safe_team_name = selected_team.team_name.lower().replace(" ", "_")
         generated_timestamp = timezone.now().strftime("%Y%m%d_%H%M%S")
         file_name = f"{safe_team_name}_report_{generated_timestamp}.pdf"
 
-        # Create media/reports folder if it does not exist
         reports_dir = os.path.join(settings.MEDIA_ROOT, "reports")
         os.makedirs(reports_dir, exist_ok=True)
 
-        # Full PDF file path
         pdf_path = os.path.join(reports_dir, file_name)
-
-        # URL stored in the database
         report_url = f"{settings.MEDIA_URL}reports/{file_name}"
-
-        # -----------------------------------------------------
-        # Generate PDF using ReportLab
-        # -----------------------------------------------------
 
         doc = SimpleDocTemplate(
             pdf_path,
@@ -148,13 +227,11 @@ def report_generate(request):
         styles = getSampleStyleSheet()
         story = []
 
-        # Report title
         title = f"{report_type} - {selected_team.team_name}"
 
         story.append(Paragraph(title, styles["Title"]))
         story.append(Spacer(1, 12))
 
-        # Generated details
         generated_at = timezone.now().strftime("%d %B %Y, %I:%M %p")
 
         story.append(
@@ -166,7 +243,6 @@ def report_generate(request):
 
         story.append(Spacer(1, 20))
 
-        # Summary section
         story.append(Paragraph("Summary", styles["Heading2"]))
 
         summary_data = [
@@ -179,7 +255,6 @@ def report_generate(request):
         ]
 
         summary_table = Table(summary_data, colWidths=[160, 320])
-
         summary_table.setStyle(
             TableStyle(
                 [
@@ -195,7 +270,6 @@ def report_generate(request):
         story.append(summary_table)
         story.append(Spacer(1, 20))
 
-        # Team Information
         story.append(Paragraph("1. Team Information", styles["Heading2"]))
 
         team_data = [
@@ -219,7 +293,6 @@ def report_generate(request):
         ]
 
         team_table = Table(team_data, colWidths=[170, 310])
-
         team_table.setStyle(
             TableStyle(
                 [
@@ -236,7 +309,6 @@ def report_generate(request):
         story.append(team_table)
         story.append(Spacer(1, 20))
 
-        # Jira Project Information
         story.append(Paragraph("2. Jira Project Information", styles["Heading2"]))
 
         if jira_project:
@@ -253,7 +325,6 @@ def report_generate(request):
             ]
 
         jira_project_table = Table(jira_project_data, colWidths=[170, 310])
-
         jira_project_table.setStyle(
             TableStyle(
                 [
@@ -269,7 +340,6 @@ def report_generate(request):
         story.append(jira_project_table)
         story.append(Spacer(1, 20))
 
-        # Jira Board Information
         story.append(Paragraph("3. Jira Board Information", styles["Heading2"]))
 
         if jira_board:
@@ -286,7 +356,6 @@ def report_generate(request):
             ]
 
         jira_board_table = Table(jira_board_data, colWidths=[170, 310])
-
         jira_board_table.setStyle(
             TableStyle(
                 [
@@ -302,7 +371,6 @@ def report_generate(request):
         story.append(jira_board_table)
         story.append(Spacer(1, 20))
 
-        # Recommendation
         story.append(Paragraph("4. Recommendation", styles["Heading2"]))
 
         story.append(
@@ -323,11 +391,9 @@ def report_generate(request):
             )
         )
 
-        # Build and save the PDF file
         doc.build(story)
 
-        # Save generated report record
-        Report.objects.create(
+        created_report = Report.objects.create(
             report_name=title,
             report_type=report_type,
             report_format="PDF",
@@ -344,6 +410,13 @@ def report_generate(request):
             last_run_at=timezone.now(),
             next_run_at=None,
             schedule_frequency=None,
+        )
+
+        create_audit_log(
+            request=request,
+            entity_name="Report",
+            action="Generate",
+            change_summary=f"Generated report '{created_report.report_name}' for team '{selected_team.team_name}'."
         )
 
         messages.success(request, "Report generated successfully.")
@@ -363,8 +436,8 @@ def share_report(request):
     """
     Share a generated report with one or more teams.
 
-    Creating ResourceLink rows so team members can access
-    the report through their team_id.
+    Creates ResourceLink rows so team members can access the report.
+    Also creates notifications for users in the selected team(s).
     """
 
     if request.method == "POST":
@@ -373,15 +446,12 @@ def share_report(request):
         permission = request.POST.get("permission")
         message = request.POST.get("message")
 
-        # Get selected report safely
         report = get_object_or_404(Report, report_id=report_id)
 
-        # Only share if the report has a generated PDF URL
         if not report.report_url:
             messages.error(request, "This report does not have a PDF URL to share.")
             return redirect("admin_report")
 
-        # Create one ResourceLink record per selected team
         for team_id in team_ids:
             ResourceLink.objects.create(
                 resource_type="report",
@@ -390,8 +460,33 @@ def share_report(request):
                 resource_value=permission,
                 report_url=report.report_url,
                 created_at=timezone.now().strftime("%Y-%m-%dT%H:%M:%S"),
-                team_id=team_id
+                team_id=team_id,
             )
+
+        receiver_users = (
+            User.objects
+            .filter(
+                userprofile__team_id__in=team_ids,
+                is_active=True
+            )
+            .distinct()
+        )
+
+        create_notification_for_users(
+            created_by=request.user,
+            title="Report shared with you",
+            message=f"{request.user.get_full_name() or request.user.username} shared the report '{report.report_name}' with your team.",
+            notification_type="Report Share",
+            link_url="/report/user-reports/",
+            receivers=receiver_users,
+        )
+
+        create_audit_log(
+            request=request,
+            entity_name="Report",
+            action="Share",
+            change_summary=f"Shared report '{report.report_name}' with {len(team_ids)} team(s)."
+        )
 
         messages.success(request, "Report shared successfully.")
 
@@ -402,10 +497,6 @@ def share_report(request):
 def user_reports(request):
     """
     Display reports shared with the logged-in user's team.
-
-    ResourceLink stores shared report links.
-    A normal user can only see reports where their team_id matches
-    ResourceLink.team_id.
     """
 
     search_query = request.GET.get("search", "").strip()
@@ -444,3 +535,40 @@ def user_reports(request):
     }
 
     return render(request, "reports/user_reports.html", context)
+
+
+@login_required
+def notifications_view(request):
+    """
+    Display all notifications for the logged-in user.
+    """
+
+    notifications = (
+        UserNotification.objects
+        .filter(user=request.user)
+        .select_related("notification")
+        .order_by("-date")
+    )
+
+    return render(request, "reports/notifications.html", {
+        "notifications": notifications,
+    })
+
+
+@login_required
+def mark_notification_read(request, notification_id):
+    """
+    Mark one notification as read for the logged-in user.
+    """
+
+    user_notification = get_object_or_404(
+        UserNotification,
+        notification_id=notification_id,
+        user=request.user,
+    )
+
+    user_notification.read_at = timezone.now().strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    user_notification.delivery_status = "Read"
+    user_notification.save(update_fields=["read_at", "delivery_status"])
+
+    return redirect("notifications")
