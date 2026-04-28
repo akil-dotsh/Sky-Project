@@ -1,0 +1,60 @@
+{% extends "core/base_staff.html" %}
+{% load static %}
+
+{% block content %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inbox</title>
+    <link rel="stylesheet" href="{% static 'css/messaging/message.css' %}">
+</head>
+
+<body>
+
+<div class="island">
+    <h3>📬 Messaging</h3>
+
+    <a href="{% url 'messaging:messaging' %}">✉️ New Message</a>
+    <a href="{% url 'messaging:inbox' %}">📥 Inbox</a>
+    <a href="{% url 'messaging:draft' %}">📝 Drafts</a>
+    <a href="{% url 'messaging:sent' %}">📤 Sent</a>
+</div>
+
+<div class="content">
+
+    <div class="card">
+
+        <h2>Inbox</h2>
+
+        <div class="message-list">
+            {% for message in messages %}
+                <a href="{% url 'messaging:message_detail' message.message_id %}" 
+                   class="message-item {% if not message.read_at %}unread{% endif %}">
+
+                    <div class="sender">{{ message.sender }}</div>
+
+                    <div class="subject">{{ message.subject }}</div>
+
+                    <div class="preview">
+                        {{ message.body|truncatechars:50 }}
+                    </div>
+
+                    <div class="time">
+                        {{ message.sent_at|date:"H:i d M" }}
+                    </div>
+
+                </a>
+            {% empty %}
+                <div class="empty">No messages</div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
+
+{% endblock %}
