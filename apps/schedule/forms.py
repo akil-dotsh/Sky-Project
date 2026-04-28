@@ -1,3 +1,15 @@
+"""
+File:        apps/schedule/forms.py
+Author:      Ryan Thompson (W1789088)
+Module:      5COSC021W — Software Development Group Project
+Description: ModelForm for creating/editing Meeting records. Wires the
+             ERD's mutex constraint at the form layer (Individual ⇒
+             recipient required, no team; Team ⇒ team required, no
+             recipient) so users get inline feedback instead of a
+             database CHECK violation.
+Co-authors:  None.
+"""
+
 from django import forms
 from django.contrib.auth.models import User
 

@@ -1,3 +1,13 @@
+"""
+File:        apps/schedule/urls.py
+Author:      Ryan Thompson (W1789088)
+Module:      5COSC021W — Software Development Group Project
+Description: URL patterns for the schedule app, namespaced under
+             `schedule:` and mounted at /schedule/ from the project
+             URLconf.
+Co-authors:  None.
+"""
+
 from django.urls import path
 from . import views
 

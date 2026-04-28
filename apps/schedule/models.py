@@ -1,3 +1,15 @@
+"""
+File:        apps/schedule/models.py
+Author:      Ryan Thompson (W1789088)
+Module:      5COSC021W — Software Development Group Project
+Description: Django ORM bindings for the schedule app. Declares three
+             unmanaged models that map onto the team's hand-written
+             ERD tables (Meeting, Team, Meeting_Participant) so the
+             schedule UI reads/writes the authoritative database
+             without owning the schema.
+Co-authors:  None (schema designed by the group; ORM mapping is mine).
+"""
+
 from django.db import models
 from django.contrib.auth.models import User
 
