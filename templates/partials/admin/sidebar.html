@@ -56,7 +56,7 @@
             <span>Messaging</span>
         </a>
 
-        <a href="#">
+        <a href="{% url 'schedule:monthly' %}" class="{% if request.resolver_match.app_name == 'schedule' %}active{% endif %}">
             <i class="bi bi-calendar2-week"></i>
             <span>Schedule</span>
         </a>

@@ -1,3 +1,15 @@
+"""
+File:        apps/schedule/views.py
+Author:      Ryan Thompson (W1789088)
+Module:      5COSC021W — Software Development Group Project
+Description: Request handlers for the schedule app — monthly, weekly
+             and agenda calendar views plus create/edit/delete flows
+             for meetings. Helpers build the calendar grids, resolve
+             the current organiser, and seed Meeting_Participant rows
+             on creation.
+Co-authors:  None.
+"""
+
 import calendar
 from datetime import date, datetime, timedelta, time as dt_time
 
@@ -59,6 +71,17 @@ def _resolve_organiser(request):
     return User.objects.first()
 
 
+def _resolve_base_template(request):
+    """Pick the right shell template so the schedule page inherits the
+    sidebar/topbar of whoever's looking at it. Admins and department
+    heads see the management shell; everyone else sees the staff shell.
+    """
+    user = getattr(request, 'user', None)
+    if user and user.is_authenticated and (user.is_staff or user.is_superuser):
+        return 'core/base_management.html'
+    return 'core/base_staff.html'
+
+
 def _base_context(request, view_name):
     focus = _parse_focus_date(request)
     return {
@@ -66,6 +89,7 @@ def _base_context(request, view_name):
         'today': date.today(),
         'active_view': view_name,
         'upcoming_meetings': _upcoming(),
+        'base_template': _resolve_base_template(request),
     }
 
 
@@ -168,7 +192,7 @@ def agenda_view(request):
     return render(request, 'schedule/agenda.html', ctx)
 
 
-def _agenda_error_context(form, extra=None):
+def _agenda_error_context(request, form, extra=None):
     ctx = {
         'form': form,
         'meetings': Meeting.objects.all().order_by('start_datetime'),
@@ -177,6 +201,7 @@ def _agenda_error_context(form, extra=None):
         'today': date.today(),
         'focus_date': date.today(),
         'upcoming_meetings': _upcoming(),
+        'base_template': _resolve_base_template(request),
         'open_modal': True,
     }
     if extra:
@@ -212,14 +237,14 @@ def create_meeting(request):
             meeting = form.save(commit=False)
             if organiser is None:
                 messages.error(request, 'No user available to organise the meeting. Please sign in.')
-                return render(request, 'schedule/agenda.html', _agenda_error_context(form))
+                return render(request, 'schedule/agenda.html', _agenda_error_context(request, form))
             meeting.organiser = organiser
             meeting.save()
             _seed_participants(meeting)
             messages.success(request, f'Meeting "{meeting.title}" scheduled.')
             return redirect(request.POST.get('next') or 'schedule:agenda')
         messages.error(request, 'Please fix the highlighted errors and try again.')
-        return render(request, 'schedule/agenda.html', _agenda_error_context(form))
+        return render(request, 'schedule/agenda.html', _agenda_error_context(request, form))
     return redirect('schedule:agenda')
 
 
@@ -236,7 +261,7 @@ def edit_meeting(request, pk):
     else:
         form = MeetingForm(instance=meeting, organiser=organiser)
 
-    ctx = _agenda_error_context(form, {'meeting': meeting, 'editing': True})
+    ctx = _agenda_error_context(request, form, {'meeting': meeting, 'editing': True})
     return render(request, 'schedule/agenda.html', ctx)
 
 

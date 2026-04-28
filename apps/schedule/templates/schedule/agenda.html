@@ -1,3 +1,14 @@
+{# ==================================================================== #}
+{# File:        apps/schedule/templates/schedule/agenda.html             #}
+{# Author:      Ryan Thompson (W1789088)                                 #}
+{# Module:      5COSC021W - Software Development Group Project           #}
+{# Description: List view of every scheduled meeting as a card with      #}
+{#              date/time/recipient tiles, optional location and join    #}
+{#              link, agenda body, and Meeting_Participant chips         #}
+{#              coloured by RSVP status. Edit/delete buttons open the    #}
+{#              shared modal or POST to the delete endpoint.             #}
+{# Co-authors:  None.                                                    #}
+{# ==================================================================== #}
 {% extends "schedule/_base_schedule.html" %}
 
 {% block schedule_body %}
