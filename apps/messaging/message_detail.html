@@ -1,0 +1,63 @@
+{% extends "core/base_staff.html" %}
+{% load static %}
+
+{% block content %}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Message Detail</title>
+    <link rel="stylesheet" href="{% static 'css/messaging/message.css' %}">
+
+</head>
+
+<body>
+
+<div class="layout">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h3>📬 Messaging</h3>
+
+        <a href="{% url 'messaging:messaging' %}">✉️ New Message</a>
+        <a href="{% url 'messaging:inbox' %}">📥 Inbox</a>
+        <a href="{% url 'messaging:draft' %}">📝 Drafts</a>
+        <a href="{% url 'messaging:sent' %}">📤 Sent</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+
+        <div class="page-title">Message Detail</div>
+
+        <div class="message-box">
+            <h3>{{ message.subject }}</h3>
+
+            <div class="meta">
+                <div><strong>From:</strong> {{ message.sender }}</div>
+                <div><strong>To:</strong> {{ message.recipient }}</div>
+                <div><strong>Date:</strong> {{ message.sent_at }}</div>
+            </div>
+
+            <div class="body">
+                {{ message.body }}
+            </div>
+        </div>
+
+        <a href="{% url 'messaging:inbox' %}" class="back">⬅ Back to Inbox</a>
+
+    </div>
+
+</div>
+
+</body>
+
+<form method="post" action="{% url 'messaging:delete' message.pk %}">
+    {% csrf_token %}
+    <button type="submit" class="delete-btn">🗑 Delete</button>
+</form>
+
+</html>
+
+{% endblock %}
