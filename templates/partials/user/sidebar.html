@@ -14,7 +14,7 @@
   <nav class="nav">
     <a href="{% url 'staff_dashboard' %}"><i class="bi bi-speedometer2"></i>Dashboard</a>
     <a href="#"><i class="bi bi-people"></i>Teams</a>
-    <a href="#"><i class="bi bi-diagram-3"></i>Organisation</a>
+    <a href="{% url 'organizations:organizations' %}"><i class="bi bi-diagram-3"></i>Organisation</a>
     <a href="#"><i class="bi bi-chat-dots"></i>Messages</a>
     <a href="{% url 'schedule:monthly' %}"><i class="bi bi-calendar2-week"></i>Schedule</a>
     <a href="{% url 'user_reports' %}"><i class="bi bi-bar-chart-line"></i>Reports</a>
