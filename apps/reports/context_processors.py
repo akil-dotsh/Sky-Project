@@ -18,7 +18,7 @@ def notifications_context(request):
         UserNotification.objects
         .filter(user=request.user)
         .select_related("notification")
-        .order_by("-date")[:5]
+        .order_by("-date")[:3]
     )
 
     unread_count = UserNotification.objects.filter(

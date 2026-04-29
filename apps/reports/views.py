@@ -2,6 +2,7 @@ import os
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.admin.models import LogEntry
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q
@@ -341,12 +342,13 @@ def report_generate(request):
     )
 
 
+@login_required
 def share_report(request):
     """
     Share a generated report with one or more teams.
 
-    Creates ResourceLink rows so team members can access the report.
-    Also creates notifications for users in the selected team(s).
+    Team members only receive notifications if they belong to the selected team(s).
+    Admin and Department Head users receive management-level notifications.
     """
 
     if request.method == "POST":
@@ -361,6 +363,11 @@ def share_report(request):
             messages.error(request, "This report does not have a PDF URL to share.")
             return redirect("admin_report")
 
+        if not team_ids:
+            messages.error(request, "Please select at least one team.")
+            return redirect("admin_report")
+
+        # Create ResourceLink rows for each selected team
         for team_id in team_ids:
             ResourceLink.objects.create(
                 resource_type="report",
@@ -372,22 +379,51 @@ def share_report(request):
                 team_id=team_id,
             )
 
-        receiver_users = (
+        # 1. Notify only users who belong to the selected teams
+        team_receiver_users = (
             User.objects
             .filter(
                 userprofile__team_id__in=team_ids,
                 is_active=True
             )
+            .exclude(id=request.user.id)
             .distinct()
         )
 
         create_notification_for_users(
             created_by=request.user,
-            title="Report shared with you",
-            message=f"{request.user.get_full_name() or request.user.username} shared the report '{report.report_name}' with your team.",
+            title="Report shared with your team",
+            message=(
+                f"{request.user.get_full_name() or request.user.username} "
+                f"shared the report '{report.report_name}' with your team."
+            ),
             notification_type="Report Share",
             link_url="/report/user-reports/",
-            receivers=receiver_users,
+            receivers=team_receiver_users,
+        )
+
+        # 2. Notify Admin and Department Head users
+        management_receiver_users = (
+            User.objects
+            .filter(is_active=True)
+            .filter(
+                Q(is_superuser=True) |
+                Q(groups__name="Department Head")
+            )
+            .exclude(id=request.user.id)
+            .distinct()
+        )
+
+        create_notification_for_users(
+            created_by=request.user,
+            title="Report shared",
+            message=(
+                f"Report '{report.report_name}' was shared with "
+                f"{len(team_ids)} team(s)."
+            ),
+            notification_type="Management Report Share",
+            link_url="/report/admin-report/",
+            receivers=management_receiver_users,
         )
 
         create_audit_log(
@@ -401,18 +437,24 @@ def share_report(request):
 
     return redirect("admin_report")
 
-
 @login_required
 def user_reports(request):
     """
-    Display reports shared with the logged-in user's team.
+    Display PDF reports shared with the logged-in user's team.
+
+    The ResourceLink table stores the shared report history.
+    A user can only see reports where ResourceLink.team_id matches
+    their UserProfile.team_id.
     """
 
+    # Get filter/search values from the URL query string
     search_query = request.GET.get("search", "").strip()
     category_filter = request.GET.get("category", "").strip()
 
+    # Get the logged-in user's profile safely
     user_profile = getattr(request.user, "userprofile", None)
 
+    # If the user has no profile or no team, show no reports
     if not user_profile or not user_profile.team_id:
         shared_reports = ResourceLink.objects.none()
     else:
@@ -421,17 +463,22 @@ def user_reports(request):
             team_id=user_profile.team_id
         ).order_by("-created_at")
 
+    # Search by report title/value, admin message, or documentation
     if search_query:
         shared_reports = shared_reports.filter(
             Q(resource_value__icontains=search_query) |
-            Q(description__icontains=search_query)
+            Q(description__icontains=search_query) |
+            Q(documentation__icontains=search_query)
         )
 
+    # Category filter
+    # This assumes the category text is stored inside resource_value.
     if category_filter:
         shared_reports = shared_reports.filter(
             resource_value__icontains=category_filter
         )
 
+    # Summary card values
     shared_reports_count = shared_reports.count()
     last_shared_report = shared_reports.first()
 
@@ -449,8 +496,24 @@ def user_reports(request):
 @login_required
 def notifications_view(request):
     """
-    Display all notifications for the logged-in user.
+    Display notifications for the logged-in user.
+
+    Team Leader / Developer:
+    - sees only notifications assigned to them.
+
+    Admin / Department Head:
+    - sees notifications assigned to them.
+    - also sees Django admin audit log entries.
     """
+
+    user_groups = list(
+        request.user.groups.values_list("name", flat=True)
+    )
+
+    is_management_user = (
+        request.user.is_superuser or
+        "Department Head" in user_groups
+    )
 
     notifications = (
         UserNotification.objects
@@ -459,9 +522,28 @@ def notifications_view(request):
         .order_by("-date")
     )
 
-    return render(request, "reports/notifications.html", {
+    audit_logs = []
+
+    if is_management_user:
+        audit_logs = (
+            LogEntry.objects
+            .select_related("user", "content_type")
+            .order_by("-action_time")[:30]
+        )
+
+    if is_management_user:
+        base_template = "core/base_management.html"
+    else:
+        base_template = "core/base_staff.html"
+
+    context = {
         "notifications": notifications,
-    })
+        "audit_logs": audit_logs,
+        "is_management_user": is_management_user,
+        "base_template": base_template,
+    }
+
+    return render(request, "reports/notifications.html", context)
 
 
 @login_required

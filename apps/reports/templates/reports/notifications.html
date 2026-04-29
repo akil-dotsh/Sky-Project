@@ -1,4 +1,4 @@
-{% extends "core/base_management.html" %}
+{% extends base_template %}
 {% load static %}
 
 {% block title %}Notifications{% endblock %}
@@ -7,6 +7,7 @@
 <div class="page-container">
     <h1 class="page-title">Notifications</h1>
 
+    <!-- Existing user notifications card -->
     <div class="card">
         {% if notifications %}
             {% for user_notif in notifications %}
@@ -40,5 +41,52 @@
             <p>No notifications found.</p>
         {% endif %}
     </div>
+
+    <!-- Add Django admin audit logs here -->
+    {% if is_management_user %}
+    <div class="card" style="margin-top: 20px;">
+        <h2 class="section-title">Django Admin Audit Logs</h2>
+        <p class="page-sub">
+            Recent actions recorded by Django admin.
+        </p>
+
+        {% if audit_logs %}
+            {% for log in audit_logs %}
+                <div class="notif-item">
+                    <strong>
+                        {{ log.user.get_full_name|default:log.user.username }}
+                        -
+                        {{ log.get_action_flag_display }}
+                    </strong>
+
+                    <p>
+                        {% if log.content_type %}
+                            {{ log.content_type.name|title }}
+                        {% else %}
+                            Unknown object
+                        {% endif %}
+
+                        {% if log.object_repr %}
+                            · {{ log.object_repr }}
+                        {% endif %}
+                    </p>
+
+                    <small>
+                        {{ log.action_time|date:"d M Y, H:i" }}
+                    </small>
+
+                    {% if log.change_message %}
+                        <p class="small">
+                            {{ log.change_message }}
+                        </p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No Django admin audit logs found.</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
 </div>
 {% endblock %}

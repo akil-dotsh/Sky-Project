@@ -10,7 +10,6 @@
 {% block content %}
 <main class="content">
 
-  <!-- Shows only if access is restricted later -->
   <section id="accessDenied" class="card card-pad deny d-none">
     <div class="deny-row">
       <div class="deny-icon">
@@ -27,12 +26,11 @@
   <section id="reportsContent">
     <h1 class="page-title">Shared Reports</h1>
     <p class="page-sub">
-      View reports generated and shared by administrators. View-only access.
+      View PDF reports shared with your team by administrators. View-only access.
     </p>
 
     <section class="grid">
 
-      <!-- Summary cards -->
       <div class="card card-pad col-4">
         <div class="stat-row">
           <div>
@@ -62,7 +60,7 @@
 
             <div class="stat-value">
               {% if last_shared_report %}
-                {{ last_shared_report.created_at }}
+                {{ last_shared_report.created_at | slice:':10' }}
               {% else %}
                 None
               {% endif %}
@@ -73,12 +71,13 @@
         </div>
       </div>
 
-      <!-- Shared reports table -->
       <div class="card card-pad col-12">
         <div class="section-head">
           <div>
             <div class="section-title">Reports shared by Admin</div>
-            <div class="page-sub">You can view only. Export is restricted.</div>
+            <div class="page-sub">
+              You can view the shared PDF reports only. Export is restricted.
+            </div>
           </div>
 
           <form method="get" class="filters" id="userReportFilterForm">
@@ -87,7 +86,7 @@
               type="text"
               name="search"
               id="userReportSearch"
-              placeholder="Search..."
+              placeholder="Search reports or messages..."
               value="{{ search_query }}"
             >
 
@@ -107,10 +106,11 @@
             <thead>
               <tr>
                 <th>Report</th>
-                <th>Message</th>
+                <th>Admin Message</th>
+                <th>Documentation</th>
                 <th>Shared</th>
                 <th>Access</th>
-                <th style="text-align:right;">Action</th>
+                <th class="actions-head">Action</th>
               </tr>
             </thead>
 
@@ -127,7 +127,7 @@
 
                     <div>
                       <div class="strong">
-                        {{ resource.resource_value }}
+                        {{ resource.resource_value|default:"Shared Report" }}
                       </div>
 
                       <div class="small">
@@ -138,7 +138,11 @@
                 </td>
 
                 <td class="small">
-                  {{ resource.description|default:"No message provided." }}
+                  {{ resource.description|default:"No message provided by admin." }}
+                </td>
+
+                <td class="small">
+                  {{ resource.documentation|default:"No documentation provided." }}
                 </td>
 
                 <td class="small">
@@ -152,34 +156,29 @@
                 </td>
 
                 <td class="actions-cell">
-                  {% if resource.report_url %}
-                    <a
-                      class="btn"
-                      href="{{ resource.report_url }}"
-                      target="_blank"
-                      style="text-decoration:none; color:#2563eb;"
-                    >
-                      <i class="bi bi-eye"></i> View
-                    </a>
-                  {% else %}
-                    <button class="btn" type="button" disabled>
-                      <i class="bi bi-eye"></i> View
-                    </button>
-                  {% endif %}
-
-                  <button class="btn soft" type="button" disabled title="Export restricted">
-                    <i class="bi bi-filetype-pdf"></i>
-                  </button>
-
-                  <button class="btn soft" type="button" disabled title="Export restricted">
-                    <i class="bi bi-filetype-xlsx"></i>
-                  </button>
+                  <div class="action-buttons">
+                    {% if resource.report_url %}
+                      <a
+                        class="btn"
+                        href="{{ resource.report_url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style="text-decoration:none; color:#2563eb;"
+                      >
+                        <i class="bi bi-eye"></i> View PDF
+                      </a>
+                    {% else %}
+                      <button class="btn" type="button" disabled>
+                        <i class="bi bi-eye"></i> No PDF
+                      </button>
+                    {% endif %}
+                  </div>
                 </td>
               </tr>
 
               {% empty %}
               <tr>
-                <td colspan="5" class="small empty-row">
+                <td colspan="6" class="small empty-row">
                   No reports have been shared with your team yet.
                 </td>
               </tr>
@@ -190,7 +189,7 @@
 
         <div class="hint-line">
           <i class="bi bi-shield-lock"></i>
-          Export is disabled for your role. Contact an admin if you need PDF or Excel downloads.
+          Reports are view-only for your role. The PDF opens in a new tab when you click View PDF.
         </div>
       </div>
 
