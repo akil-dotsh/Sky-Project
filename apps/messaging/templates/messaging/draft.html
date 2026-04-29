@@ -5,14 +5,19 @@
 
 <link rel="stylesheet" href="{% static 'css/messaging/message.css' %}">
 
-<div class="island">
-    <h3>📬 Messaging</h3>
+<!-- ISLAND MENU -->
 
-    <a href="{% url 'messaging:messaging' %}">✉️ New Message</a>
-    <a href="{% url 'messaging:inbox' %}">📥 Inbox</a>
-    <a href="{% url 'messaging:draft' %}" class="active">📝 Drafts</a>
-    <a href="{% url 'messaging:sent' %}">📤 Sent</a>
+<div class="island">
+    <h3> ☰ Messaging</h3>
+
+        <a href="{% url 'messaging:messaging' %}"> New Message</a>
+        <a href="{% url 'messaging:inbox' %}"> Inbox</a>
+        <a href="{% url 'messaging:draft' %}"> Drafts</a>
+        <a href="{% url 'messaging:sent' %}"> Sent</a>
 </div>
+
+
+<!-- MAIn CONTENT -->
 
 <div class="content">
 

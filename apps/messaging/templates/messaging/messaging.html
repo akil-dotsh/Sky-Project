@@ -8,46 +8,56 @@
 <!-- ISLAND MENU -->
 
 <div class="island">
-    <h3>📬 Messaging</h3>
+    <h3> ☰ Messaging</h3>
 
-    <a href="{% url 'messaging:messaging' %}">✉️ New Message</a>
-    <a href="{% url 'messaging:inbox' %}">📥 Inbox</a>
-    <a href="{% url 'messaging:draft' %}">📝 Drafts</a>
-    <a href="{% url 'messaging:sent' %}">📤 Sent</a>
+        <a href="{% url 'messaging:messaging' %}"> New Message</a>
+        <a href="{% url 'messaging:inbox' %}"> Inbox</a>
+        <a href="{% url 'messaging:draft' %}"> Drafts</a>
+        <a href="{% url 'messaging:sent' %}"> Sent</a>
 </div>
 
 
 <!-- MAIN CONTENT -->
-<div class="message-content">
+<div class="content">
 
    
 
-    <div class="msg-card">
+    <div class="card">
 
-        <h2>Compose Message</h2>
+        <h2>Message:</h2>
 
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <label>To</label>
-            <input type="text" name="recipient">
+            <div class="form-group">
+                <label>To:</label>
+                <input type="text" name="recipient">
+            </div>
 
-            <label>Teams</label>
-            <input type="text" name="teams">
+            <div class="form-group">
+                <label>Teams:</label>
+                <input type="text" name="teams">
+            </div>
 
-            <label>Subject</label>
-            <input type="text" name="subject">
+            <div class="form-group">
+                <label>Subject:</label>
+                <input type="text" name="subject">
+            </div>
 
-            <label>Message</label>
-            <textarea name="body" rows="6"></textarea>
+            <div class="form-group">
+                <label for="body">Message:</label>
+                <textarea name="body" rows="6" class="message-box"></textarea>
+            </div>
 
-            <label>Attachment</label>
-            <input type="file" name="attachment">
+            <div class="form-group">
+                <label>Attachment</label>
+                <input type="file" name="attachment">
+            </div>
 
             <div class="button-group">
                 <button type="submit" name="action" value="send" class="send">Send</button>
                 <button type="submit" name="action" value="draft" class="draft">Save Draft</button>
-                <button type="button" class="delete" onclick="this.form.reset()">Delete</button>
+                <button type="button" class="delete" onclick="this.form.reset()">Clear</button>
             </div>
 
 
@@ -59,12 +69,29 @@
 
 <script>
 let draftId = null;
+let timeout;
+let autosaveInitialized = false;
+
+function scheduleAutosave() {
+    clearTimeout(timeout);
+    timeout = setTimeout(autosaveDraft, 2000);
+}
+
+function initAutosave() {
+    if (autosaveInitialized) return;
+    autosaveInitialized = true;
+
+    document.querySelectorAll("input, textarea").forEach(el => {
+        el.addEventListener("input", scheduleAutosave);
+    });
+}
 
 function autosaveDraft() {
+    const subject = document.querySelector("[name=subject]")?.value || "";
+    const body = document.querySelector("[name=body]")?.value || "";
+    const recipient = document.querySelector("[name=recipient]")?.value || "";
 
-    const subject = document.querySelector("[name=subject]").value;
-    const body = document.querySelector("[name=body]").value;
-    const recipient = document.querySelector("[name=recipient]").value;
+    if (!subject && !body && !recipient) return;
 
     fetch("/messaging/autosave/", {
         method: "POST",
@@ -74,26 +101,22 @@ function autosaveDraft() {
         },
         body: new URLSearchParams({
             draft_id: draftId || "",
-            subject: subject,
-            body: body,
-            recipient: recipient
+            subject,
+            body,
+            recipient
         })
     })
     .then(r => r.json())
     .then(data => {
-        if (data.draft_id) {
-            draftId = data.draft_id;
-        }
+        if (data.draft_id) draftId = data.draft_id;
     });
 }
 
-setInterval(autosaveDraft, 5000);
+document.addEventListener("DOMContentLoaded", initAutosave);
 
 function getCSRFToken() {
-    return document.cookie.split('; ')
-        .find(row => row.startsWith('csrftoken='))
-        ?.split('=')[1];
+    const match = document.cookie.match(/csrftoken=([^;]+)/);
+    return match ? match[1] : "";
 }
 </script>
-
 {% endblock %}
