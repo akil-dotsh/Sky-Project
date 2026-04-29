@@ -1,0 +1,309 @@
+body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    background: #eef3f8;
+    color: #1f2a37;
+}
+
+/* Island Menu */
+.island {
+    position: fixed;
+    top: 150px;
+    left: 290px;
+    
+
+    width: 180px;
+    flex-shrink: 0;
+    max-height: 240px;
+
+    background: white;
+    border-radius: 16px;
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    overflow-y: auto;
+
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.island h3 {
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    margin: 0 0 13px 0;
+    font-size: 22px;
+}
+
+.island a {
+    display: block;
+    padding: 6px 8px;
+    margin-bottom: 6px;
+    text-decoration: none;
+    color: #1f2a37;
+    border-radius: 10px;
+    transition: 0.2s;
+    font-size: 15px;
+    font-weight: 500;
+
+}
+
+.island a:hover {
+    background: #eef3ff;
+    color: #2563eb;
+}
+
+/* Main content */
+.content {
+    margin-left: 520px;
+    padding: 30px;
+    max-width: 1100px;
+}
+/* Card */
+.card {
+    background: white;
+    padding: 25px;
+    border-radius: 14px;
+    width: 750px;
+}
+
+/* Form elements */
+label {
+    font-weight: 600;
+    font-size: 14px;
+    display: block;
+    margin-top: 12px;
+    margin-bottom: 6px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+input:focus, textarea:focus {
+    border-color: #2563eb;
+    outline: none;
+}
+
+textarea {
+    resize: vertical;
+}
+
+/* Buttons */
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.send {
+    background: #2563eb;
+    color: white;
+}
+
+.send:hover {
+    background: #1e4fd1;
+}
+
+.draft {
+    background: #6b7280;
+    color: white;
+}
+
+.delete {
+    background: #ef4444;
+    color: white;
+}
+
+/* Excel section */
+.excel-upload {
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* PAGE */
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f5f7fa;
+}
+
+/* CONTENT WRAPPER */
+.content {
+    padding: 30px;
+    max-width: 1000px;
+    margin: auto;
+}
+
+/* CARD (Sky style container) */
+.card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+}
+
+/* HEADER */
+.card h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-weight: 600;
+}
+
+/* MESSAGE LIST */
+.message-list {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* MESSAGE ROW */
+.message-item {
+    display: grid;
+    grid-template-columns: 180px 250px 1fr 120px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+    text-decoration: none;
+    color: #333;
+    transition: 0.2s;
+}
+
+/* HOVER */
+.message-item:hover {
+    background: #f0f4ff;
+}
+
+/* UNREAD */
+.message-item.unread {
+    background: #eaf1ff;
+    font-weight: 600;
+}
+
+/* TEXT STYLES */
+.sender {
+    font-weight: 600;
+}
+
+.subject {
+    color: #222;
+}
+
+.preview {
+    color: #666;
+}
+
+.time {
+    text-align: right;
+    font-size: 13px;
+    color: #999;
+}
+
+/* EMPTY STATE */
+.empty {
+    padding: 20px;
+    text-align: center;
+    color: #888;
+}
+
+/* DRAFT LIST*/
+.draft-container {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* DRAFT ITEM */
+.draft-card {
+    display: grid;
+    grid-template-columns: 1fr 2fr 120px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+    text-decoration: none;
+    color: #333;
+    transition: 0.2s;
+}
+
+/* Make entire card clickable */
+.draft-card a {
+    display: contents;
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Hover effect */
+.draft-card:hover {
+    background: #f0f4ff;
+}
+
+/* Draft-specific subtle styling */
+.draft-card .sender {
+    font-weight: 600;
+}
+
+.draft-card .subject {
+    color: #222;
+}
+
+.draft-card .time {
+    text-align: right;
+    font-size: 13px;
+    color: #999;
+}
+
+/*Draft indicator  */
+.draft-card {
+    background: #fafbff;
+}
+/* ACTIVE SIDEBAR LINK */
+.island a.active {
+    background: #2563eb;
+    color: white;
+}
+
+/* SENT LIST*/
+.message-list {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* MESSAGE ROW */
+.message-item {
+    display: grid;
+    grid-template-columns: 180px 250px 1fr 120px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #eee;
+    text-decoration: none;
+    color: #333;
+    transition: 0.2s;
+}
+
+.message-item:hover {
+    background: #f0f4ff;
+}
+
+/* TEXT */
+.sender {
+    font-weight: 600;
+}
+
+.subject {
+    color: #222;
+}
+
+.preview {
+    color: #666;
+}
+
+.time {
+    text-align: right;
+    font-size: 13px;
+    color: #999;
+}
