@@ -512,13 +512,14 @@
 }
 
 .sched-week-cell {
-  min-height: 70px;
+  height: 70px;
   padding: 6px 8px;
   border-right: 1px solid var(--sch-border);
   background: #fff;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  overflow: hidden;
 }
 
 .sched-week-cell:last-child {
@@ -541,13 +542,24 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 6px 8px;
+  padding: 5px 8px;
   border-radius: 8px;
   background: var(--sch-gradient);
   color: #fff;
   font-size: 11px;
+  line-height: 1.25;
   text-decoration: none;
   box-shadow: 0 4px 10px rgba(30, 141, 255, 0.25);
+  flex-shrink: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.sched-week-event-title,
+.sched-week-event-meta {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sched-week-event-title {
