@@ -1,3 +1,6 @@
+# Author: Akil Hossain
+# Student ID: 20270054
+
 import os
 from datetime import date
 
@@ -8,7 +11,7 @@ from django.shortcuts import render, redirect
 
 from apps.authentication.models import UserProfile
 
-
+# Handles the logic for allowing users to update their profile information and save the submitted changes to the database.
 @login_required
 def update_info(request):
     user = request.user

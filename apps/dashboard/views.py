@@ -1,3 +1,6 @@
+# Author: Akil Hossain
+# Student ID: 20270054
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import User, Group
@@ -7,10 +10,11 @@ from django.views.decorators.http import require_POST
 
 from apps.dashboard.models import Team
 
+# Handles dashboard views, user management, and permission group updates.
 
 def get_active_team_count():
     """
-    Return the number of active teams for dashboard summary cards.
+    Return the number of active teams for dashboard .
     """
     return Team.objects.filter(status="Active").count()
 

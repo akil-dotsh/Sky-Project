@@ -1,3 +1,6 @@
+# Author: Akil Hossain
+# Student ID: 20270054
+
 from django.contrib import admin
 from django.contrib.admin.sites import NotRegistered
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
@@ -7,6 +10,7 @@ from .models import Report, Notification, UserNotification, ResourceLink
 from .services import create_audit_log_for_user
 
 
+# Registers report, notification, resource link, and custom user admin models.
 try:
     admin.site.unregister(User)
 except NotRegistered:

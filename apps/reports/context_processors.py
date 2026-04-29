@@ -1,11 +1,14 @@
+# Author: Akil Hossain
+# Student ID: 20270054
+
 from .models import UserNotification
 
-
+# Provides notification counts and recent notifications to the topbar.
 def notifications_context(request):
     """
     Makes notification data available globally in templates.
 
-    Used by the topbar notification bell/dropdown.
+    Used by the top-bar notification bell/dropdown.
     """
 
     if not request.user.is_authenticated:

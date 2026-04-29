@@ -1,7 +1,9 @@
+# Author: Akil Hossain
+# Student ID: 20270054
 from django import forms
 from django.contrib.auth.models import User
-from django.core import validators
 
+# These validate user authentication on the backend to prevent reliance on potentially intercepted browser-side data.
 class RegistrationForm(forms.Form):
     first_name = forms.CharField(
         max_length=100,

@@ -1,3 +1,8 @@
+# Author: Akil Hossain
+# Student ID: 20270054
+# Handles report generation, report sharing, team-based report access,
+# notification views, and audit log display for the report app.
+
 import os
 
 from django.conf import settings

@@ -1,9 +1,13 @@
+# Author: Akil Hossain
+# Student ID: 20270054
+
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.utils import timezone
 
 from .models import AuditLog, Notification, UserNotification
 
+# Handles reusable notification creation and audit log service logic.
 
 def get_management_notification_users():
     """
@@ -65,7 +69,6 @@ def create_audit_log_for_user(actor, entity_name, action, change_summary):
     """
     Create an audit log and send an audit notification to Admin + Department Head.
 
-    This is used when we already have a user object, such as inside admin.py.
     """
 
     audit_log = AuditLog.objects.create(

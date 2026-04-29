@@ -1,6 +1,10 @@
+# Author: Akil Hossain
+# Student ID: 20270054
+
 from django.db import models
 from apps.reports.models import JiraBoard,JiraProject
 
+#Mapping to the Team table for now which will remove shortly, after team app has the model implementation
 class Team(models.Model):
     team_id = models.AutoField(primary_key=True)
     team_name = models.TextField()

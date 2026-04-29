@@ -1,3 +1,6 @@
+# Author: Akil Hossain
+# Student ID: 20270054
+
 from django.db import models
 from django.contrib.auth.models import User
 
@@ -115,7 +118,8 @@ class Notification(models.Model):
 
 class Report(models.Model):
     """
-    Main Report table created and managed by Django.
+    Report table created and managed by Django model.
+    This is a new table that didn't exist in db before
     """
 
     REPORT_TYPE_CHOICES = [
@@ -243,11 +247,6 @@ class UserNotification(models.Model):
 
     user_id in this table means the user who received/read the notification.
 
-    Important:
-    Your database table does not have an id column.
-    Your DB uses notification_id + user_id + date as a composite primary key.
-    Django does not fully support composite primary keys, so date is used as
-    the Django primary key workaround.
     """
 
     DELIVERY_STATUS_CHOICES = [

@@ -1,6 +1,10 @@
+# Author: Akil Hossain
+# Student ID: 20270054
+
 from django.db import models
 from django.contrib.auth.models import User
 
+#Mapping to the existing UserProfile table inside sqlite3 db
 class UserProfile(models.Model):
     user = models.OneToOneField(
         User,

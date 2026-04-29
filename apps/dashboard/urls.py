@@ -1,6 +1,9 @@
+# Author: Akil Hossain
+# Student ID: 20270054
 from django.urls import path
 from . import views
 
+#path related to user dashboard based on their role
 urlpatterns = [
     path("staff_dashboard/", views.staff_dashboard, name="staff_dashboard"),
     path("management_dashboard/", views.management_dashboard, name="management_dashboard"),

@@ -1,3 +1,5 @@
+# Author: Akil Hossain
+# Student ID: 20270054
 from django.urls import path
 
 from . import views
