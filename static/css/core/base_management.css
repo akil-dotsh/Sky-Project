@@ -1,3 +1,4 @@
+/* Author: Akil Hossain | Student ID: 20270054 */
 :root{
   --sidebar-w: 270px;
 
@@ -265,6 +266,8 @@ body{
   display:flex;
   align-items:center;
   gap:14px;
+  margin-left:auto;
+  position:relative;
 }
 .top-left{
   display:flex;

@@ -1,6 +1,10 @@
-{% extends "layout/../../../core/base_staff.html" %}
-
+{% extends "core/base_staff.html" %}
+{% load static %}
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/teams/detail.css' %}">
+<script src="{% static 'js/teams/tabs.js' %}"></script>
+
+<!--To go back to the team directory -->
 <div style="margin-bottom: 20px;">
     <a href="{% url 'teams_list' %}"
         style="text-decoration: none; color: var(--muted); font-weight: 500; display: flex; align-items: center; gap: 5px;">
@@ -8,70 +12,372 @@
     </a>
 </div>
 
+<!--Main box, team tittle, team leader and email and schedule button is displayed-->
 <div class="card card-pad" style="margin-bottom: 20px; border-bottom: 4px solid var(--primary);">
-    <h1 style="margin: 0;">{{ team.name }}</h1>
-    <p style="color: var(--muted); margin-top: 5px;">
-        <strong>Manager:</strong> {{ team.dept_head }} | <strong>Lead:</strong> {{ team.leader }}
-    </p>
+    <h1 style="margin: 0;">{{ team.team_id }}</h1>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+        <p style="color: var(--muted); margin: 0;">
+            <strong>Tean Leader:</strong> {{ team.user.get_full_name|default:"Not assigned" }}
+
+        </p>
+        <div style="display: flex; gap: 10px;">
+            <button class="action blue" onclick="toggleForm('emailDropdown')"
+                style="padding: 8px 16px; cursor: pointer; border: none; border-radius: 4px;">
+                Send Email
+            </button>
+
+            <button class="action blue" onclick="toggleScheduleForm()"
+                style="padding: 8px 16px; cursor: pointer; border: none; border-radius: 4px;">
+                Schedule Meeting
+            </button>
+        </div>
+    </div>
 </div>
 
+<!--Information to send email is displayed-->
+<div id="emailDropdown"
+    style="display: none; position: relative; margin-top: 20px; padding: 25px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
+    <button onclick="closeForm('emailDropdown')"
+        style="position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+
+    <h4 style="margin-top: 0; color: #0369a1;">📧 Send Quick Email</h4>
+    <div style="margin-bottom: 10px; font-size: 0.85rem; color: #0c4a6e;">
+        <strong>Recipients:</strong> <span style="background: #e0f2fe; padding: 2px 8px; border-radius: 4px;">All
+            Team
+            Members ✅</span>
+    </div>
+
+    <form onsubmit="sendFakeEmail(event)">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <input type="text" placeholder="Subject:" required
+                style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px;">
+            <textarea placeholder="Write your message here..." required
+                style="padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; height: 100px;"></textarea>
+            <button type="submit" class="action blue"
+                style="border: none; padding: 12px; cursor: pointer; font-weight: bold; width: 100%;">Send
+                Message</button>
+        </div>
+    </form>
+</div>
+
+<!--Information to request a meeeting is displayed-->
+<div id="scheduleDropdown"
+    style="display: none; position: relative; margin-top: 20px; padding: 25px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
+    <button onclick="closeForm('scheduleDropdown')"
+        style="position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b;">&times;</button>
+
+    <h4 style="margin-top: 0;">📅 New Meeting Details</h4>
+    <form method="POST" action="{% url 'schedule:create' %}">
+        {% csrf_token %}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <input type="date" name="date" required style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+            <input type="time" name="time" required style="padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+            <select name="platform" style="grid-column: span 2; padding: 8px;">
+                <option value="Zoom">Zoom</option>
+                <option value="Teams">Microsoft Teams</option>
+            </select>
+            <textarea name="description" placeholder="Agenda..."
+                style="grid-column: span 2; padding: 8px; height: 60px;"></textarea>
+            <button type="submit" class="action blue"
+                style="grid-column: span 2; border: none; padding: 10px; cursor: pointer;">Confirm &
+                Schedule</button>
+        </div>
+    </form>
+</div>
+
+<!--Syb navigation bar-->
 <div class="tabs-container" style="display: flex; gap: 20px; margin-bottom: 20px; border-bottom: 1px solid #ddd;">
     <button class="tab-link active" onclick="openTab(event, 'overview')"
         style="padding: 10px 20px; border: none; background: none; cursor: pointer; border-bottom: 2px solid var(--primary);">Overview</button>
     <button class="tab-link" onclick="openTab(event, 'members')"
         style="padding: 10px 20px; border: none; background: none; cursor: pointer;">Members</button>
-    <button class="tab-link" onclick="openTab(event, 'repos')"
+    <button class="tab-link" onclick="openTab(event, 'repositories')"
         style="padding: 10px 20px; border: none; background: none; cursor: pointer;">Repositories</button>
-    <button class="tab-link" onclick="openTab(event, 'deps')"
+    <button class="tab-link" onclick="openTab(event, 'dependencies')"
         style="padding: 10px 20px; border: none; background: none; cursor: pointer;">Dependencies</button>
 </div>
 
-<div id="overview" class="tab-content" style="display: block;">
-    <div class="card card-pad">
-        <h3>Focus Areas</h3>
-        <p>{{ team.focus_areas }}</p>
-        <h3>Tech Stack</h3>
-        <code style="background: #f4f4f4; padding: 10px; display: block;">{{ team.tech_stack }}</code>
+<!--OVERVIEW information-->
+<div id="overview" class="tab-content">
+    <div class="team-overview-grid">
+        <!--About the team-->
+        <div class="overview-box about-box">
+            <h3>About the Team</h3>
+            <!--Manager is supposed to be able to edit the bio-->
+            {% if request.user == team.user %}
+            <form method="POST" action="{% url 'teams:update_bio' team.id %}">
+                {% csrf_token %}
+                <textarea name="bio"
+                    style="width: 100%; min-height: 120px; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-family: inherit;">{{ team.bio }}</textarea>
+                <button type="submit" class="action blue"
+                    style="margin-top: 10px; border: none; padding: 8px 16px; cursor: pointer;">
+                    Update Bio
+                </button>
+            </form>
+            {% else %}
+            <p style="color: #475569; line-height: 1.6; font-size: 1rem;">
+                {{ team.bio|default:"No bio available yet." }}
+            </p>
+            {% endif %}
+            <div class="meta-info">
+                <p><strong>Department:</strong> {{ team.department }}</p>
+                <p><strong>Location:</strong> {{ team.office_location|default:"London, UK" }}</p>
+            </div>
+        </div>
+
+        <!--Contacts box-->
+        <div class="sidebar-column">
+            <div class="overview-box">
+                <h3>Key Contacts</h3>
+                <div class="contact-entry" style="margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+                    <div class="contact-avatar"
+                        style="width: 40px; height: 40px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                        {{ team.user.first_name|slice:":1" }}
+                    </div>
+                    <div>
+                        <p style="margin: 0; font-weight: bold; color: var(--primary);">{{ team.user.get_full_name
+                            }}
+                        </p>
+                        <p style="margin: 0; font-size: 0.85rem; color: var(--muted);">Team Leader</p>
+                    </div>
+                </div>
+                <div class="contact-entry" style="display: flex; align-items: center; gap: 15px;">
+
+                    <div class="contact-avatar"
+                        style="width: 40px; height: 40px; background: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                        {{ team.department|slice:":1" }}
+                    </div>
+                    <div>
+                        <p style="margin: 0; font-weight: bold; color: var(--primary);">
+                            {{ team_info.dept_head|default:"Not Available" }}
+                        </p>
+                        <p style="margin: 0; font-size: 0.85rem; color: var(--muted);">Department Head</p>
+                    </div>
+                </div>
+            </div>
+
+            <!--Links box-->
+            <div class="overview-box" style="margin-top: 20px;">
+                <h3>Quick Links</h3>
+                <ul class="quick-links-list">
+                    <li><a href="#">GitHub Organisation</a></li>
+                    <li><a href="#">Team Documentation</a></li>
+                    <li><a href="#">Team Calendar</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
 </div>
 
-<div id="members" class="tab-content" style="display: none;">
-    <div class="card card-pad">
-        <h3>Team Members</h3>
-        <p>List of developers assigned to {{ team.name }} will appear here.</p>
+<!--MEMBERS tab information-->
+<div id="members" class="tab-content">
+    <!--Another sub tab-->
+    <div class="members-filter-card">
+        <div class="filter-group">
+            <button class="filter-btn active" onclick="filterMembers('all')">All roles</button>
+            <button class="filter-btn" onclick="filterMembers('Engineer')">Engineers</button>
+            <button class="filter-btn" onclick="filterMembers('Designer')">Designers</button>
+        </div>
+
+        <div class="search-wrapper">
+            <input type="text" id="memberSearch" placeholder="Search Member..." onkeyup="searchMembers()">
+        </div>
+    </div>
+
+    <div class="members-grid" id="membersGrid">
+
+        {% if team_info.dept_head %}
+        <div class="member-card" data-role="Leadership">
+            <div class="card-header">
+                <div class="member-avatar">{{ team_info.dept_head|slice:":1" }}</div>
+                <div class="member-info">
+                    <h4 class="member-name">{{ team_info.dept_head }}</h4>
+                    <p class="member-role">Department Head</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <p>✉️ dept_head@sky.uk</p>
+                <p>📞 +44 20 7123 4567</p>
+            </div>
+        </div>
+        {% endif %}
+
+        {% for member in team_members %}
+        <div class="member-card" data-role="{{ member.role|default:'Staff' }}">
+            <div class="card-header">
+                <div class="member-avatar">{{ member.user.first_name|slice:":1" }}</div>
+                <div class="member-info">
+                    <h4 class="member-name">{{ member.user.get_full_name }}</h4>
+                    <p class="member-role">{{ member.role|default:"Team Member" }}</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <p>✉️ {{ member.user.email }}</p>
+                <p>📞 {{ member.phone_number|default:"+44 20 7123 4567" }}</p>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div id="noResults" style="display: none; grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">
+            No members found with that name or role.
+        </div>
     </div>
 </div>
 
-<div id="repos" class="tab-content" style="display: none;">
-    <div class="card card-pad">
-        <h3>Jira & Git</h3>
-        <p><strong>Jira Project:</strong> {{ team.jira_project }}</p>
+<!--REPOSITORIES tab information-->
+<div id="repositories" class="tab-content">
+    <div class="overview-box"
+        style="background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+
+        <div style="border-bottom: 1px solid #f1f5f9; padding-bottom: 20px; margin-bottom: 25px;">
+            <label
+                style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px;">Jira
+                Project</label>
+            <h2 style="margin: 5px 0; color: #1e293b; font-size: 1.5rem;">{{ team_info.jira_project|default:"N/A" }}
+            </h2>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 25px;">
+
+            <div>
+                <label
+                    style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 10px;">Development
+                    Focus Areas</label>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                    {% for focus in team_info.focus_areas.split %}
+                    <span
+                        style="background: #eff6ff; color: #3b82f6; padding: 5px 12px; border-radius: 6px; font-size: 0.85rem; font-weight: 500;">
+                        {{ focus|cut:"," }}
+                    </span>
+                    {% empty %}
+                    <span style="color: #64748b; font-style: italic;">No focus areas listed</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div>
+                <label
+                    style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 10px;">GitHub
+                    Repository Link</label>
+                <a href="https://{{ team_info.github_repo }}" target="_blank"
+                    style="display: inline-flex; align-items: center; color: #2563eb; text-decoration: none; font-weight: 500; background: #f8fafc; padding: 10px 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <span style="margin-right: 8px;">📦</span> {{ team_info.github_repo|default:"Link not available"
+                    }}
+                </a>
+            </div>
+        </div>
+
+        <div style="background: #f8fafc; padding: 15px 20px; border-radius: 8px; border-left: 4px solid #60a5fa;">
+            <label
+                style="color: #64748b; font-size: 0.75rem; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 5px;">Jira
+                Board Link</label>
+            <a href="{{ team_info.jira_board }}" target="_blank"
+                style="color: #2563eb; text-decoration: none; font-size: 0.95rem; word-break: break-all;">
+                {{ team_info.jira_board|default:"No board link found" }}
+            </a>
+        </div>
+
     </div>
 </div>
 
-<div id="deps" class="tab-content" style="display: none;">
-    <div class="card card-pad">
-        <h3>Upstream/Downstream</h3>
-        <p>External dependencies for this unit.</p>
+<!--DEPENDECIES tab information-->
+<div id="dependencies" class="tab-content">
+    <div class="overview-box"
+        style="background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="text-align: left; background: #f8fafc; color: #64748b;">
+                    <th style="padding: 12px; border-bottom: 2px solid #e2e8f0;"> Downstram </th>
+                    <th style="padding: 12px; border-bottom: 2px solid #e2e8f0;">Type</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #e2e8f0;">Team Leader</th>
+                    <th style="padding: 12px; border-bottom: 2px solid #e2e8f0;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for dep in dependencies %}
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 12px; font-weight: 500;">{{ dep.target_team }}</td>
+
+                    <td style="padding: 12px;">{{ dep.type }}</td>
+
+                    <td style="padding: 12px; color: #666;">{{ team_info.leader | default:"No leader Assigned"}}
+                    </td>
+
+                    <td style="padding: 12px;">
+                        {% if 'Done' in dep.status %}
+                        <span
+                            style="padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; background: #dcfce7; color: #166534;">
+                            Done
+                        </span>
+                        {% elif 'Blocked' in dep.status %}
+                        <span
+                            style="padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; background: #fee2e2; color: #991b1b;">
+                            Blocked
+                        </span>
+                        {% else %}
+                        <span
+                            style="padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; background: #fef9c3; color: #854d0e;">
+                            Active
+                        </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="padding: 40px; text-align: center; color: #94a3b8;">
+                        No dependencies found for this team.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
 </div>
 
+
+<!--Tab Switching Logic, it hides all sections and shows the clicked one-->
 <script>
     function openTab(evt, tabName) {
         var i, tabcontent, tablinks;
-        // Hide all contents
         tabcontent = document.getElementsByClassName("tab-content");
         for (i = 0; i < tabcontent.length; i++) {
             tabcontent[i].style.display = "none";
         }
-        // Remove "active" class from buttons
         tablinks = document.getElementsByClassName("tab-link");
         for (i = 0; i < tablinks.length; i++) {
             tablinks[i].style.borderBottom = "none";
+
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.style.borderBottom = "2px solid var(--primary)";
         }
-        // Show the current tab and add an active style
-        document.getElementById(tabName).style.display = "block";
-        evt.currentTarget.style.borderBottom = "2px solid var(--primary)";
+    }
+
+    //Toggles visibility of email and schedule sections
+    function toggleScheduleForm() {
+        var formDiv = document.getElementById("scheduleDropdown");
+        if (formDiv.style.display === "none") {
+            formDiv.style.display = "block";
+        } else {
+            formDiv.style.display = "none";
+        }
+    }
+
+    function toggleForm(id) {
+        document.getElementById("emailDropdown").style.display = "none";
+        document.getElementById("scheduleDropdown").style.display = "none";
+        var target = document.getElementById(id);
+        target.style.display = "block";
+    }
+    function closeForm(id) {
+        document.getElementById(id).style.display = "none";
+    }
+    function sendFakeEmail(event) {
+        event.preventDefault();
+        alert("Success! Your message has been sent to all team members.");
+        document.getElementById("emailDropdown").style.display = "none";
     }
 </script>
+
 {% endblock %}

@@ -1,0 +1,189 @@
+<!-- Author: Akil Hossain | Student ID: 20270054 -->
+{% extends "core/base_management.html" %}
+{% load static %}
+
+{% block title %}User Management{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard/user_management.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="permission-page">
+
+    <div class="permission-header">
+        <div>
+            <h1 class="page-title">User & Permission Management</h1>
+            <p class="page-sub">
+                Manage user groups, account status, staff access, and superuser permissions.
+            </p>
+        </div>
+
+        <a href="{% url 'admin:auth_user_add' %}" class="btn-primary-outline">
+            + Add User
+        </a>
+    </div>
+
+    {% if messages %}
+        <div class="message-stack">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="permission-layout">
+
+        <section class="card card-pad permission-main">
+            <div class="section-title-row">
+                <div>
+                    <h2>System Users</h2>
+                    <p>Search users and update access permissions.</p>
+                </div>
+            </div>
+
+            <form method="get" class="filter-row">
+                <input
+                    type="text"
+                    name="search"
+                    placeholder="Search username, name or email..."
+                    value="{{ search_query }}"
+                >
+
+                <select name="group">
+                    <option value="">All groups</option>
+                    {% for group in groups %}
+                        <option value="{{ group.id }}" {% if group_filter == group.id|stringformat:"s" %}selected{% endif %}>
+                            {{ group.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <select name="status">
+                    <option value="">All statuses</option>
+                    <option value="active" {% if status_filter == "active" %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if status_filter == "inactive" %}selected{% endif %}>Inactive</option>
+                    <option value="staff" {% if status_filter == "staff" %}selected{% endif %}>Staff</option>
+                    <option value="superuser" {% if status_filter == "superuser" %}selected{% endif %}>Superuser</option>
+                </select>
+
+                <button type="submit" class="btn-primary">Filter</button>
+            </form>
+
+            <div class="user-list">
+                {% for user_obj in users %}
+                    <form method="post" action="{% url 'update_user_permissions' user_obj.id %}" class="user-card">
+                        {% csrf_token %}
+
+                        <div class="user-card-header">
+                            <div>
+                                <h3>{{ user_obj.get_full_name|default:user_obj.username }}</h3>
+                                <p>{{ user_obj.email|default:"No email address" }}</p>
+                                <span>@{{ user_obj.username }}</span>
+                            </div>
+
+                            <div class="badge-row">
+                                {% if user_obj.is_active %}
+                                    <span class="badge success">Active</span>
+                                {% else %}
+                                    <span class="badge muted">Inactive</span>
+                                {% endif %}
+
+                                {% if user_obj.is_staff %}
+                                    <span class="badge blue">Staff</span>
+                                {% endif %}
+
+                                {% if user_obj.is_superuser %}
+                                    <span class="badge danger">Superuser</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="user-card-body">
+                            <div class="access-box">
+                                <h4>Access Controls</h4>
+
+                                <label class="toggle-row">
+                                    <span>Active account</span>
+                                    <input type="checkbox" name="is_active" {% if user_obj.is_active %}checked{% endif %}>
+                                </label>
+
+                                <label class="toggle-row">
+                                    <span>Staff status</span>
+                                    <input type="checkbox" name="is_staff" {% if user_obj.is_staff %}checked{% endif %}>
+                                </label>
+
+                                <label class="toggle-row danger-label">
+                                    <span>Superuser status</span>
+                                    <input type="checkbox" name="is_superuser" {% if user_obj.is_superuser %}checked{% endif %}>
+                                </label>
+                            </div>
+
+                            <div class="group-box">
+                                <h4>Groups</h4>
+
+                                <div class="group-grid">
+                                    {% for group in groups %}
+                                        <label class="group-option">
+                                            <input
+                                                type="checkbox"
+                                                name="groups"
+                                                value="{{ group.id }}"
+                                                {% if group in user_obj.groups.all %}checked{% endif %}
+                                            >
+                                            <span>{{ group.name }}</span>
+                                        </label>
+                                    {% empty %}
+                                        <p>No groups created yet.</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="user-card-footer">
+                            <a href="{% url 'admin:auth_user_change' user_obj.id %}" class="btn-secondary">
+                                Edit User Info
+                            </a>
+
+                        <button type="submit" class="btn-primary">
+                            Save Permissions
+                        </button>
+                    </div>
+                    </form>
+                {% empty %}
+                    <div class="empty-state">
+                        <h3>No users found</h3>
+                        <p>Try a different search or filter.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <aside class="card card-pad permission-side">
+            <h2>Create Group</h2>
+            <p>Create a new role/group and assign it to users.</p>
+
+            <form method="post" action="{% url 'create_group' %}" class="group-create-form">
+                {% csrf_token %}
+                <input type="text" name="group_name" placeholder="Example: Project Manager">
+                <button type="submit" class="btn-primary">Create Group</button>
+            </form>
+
+            <div class="existing-groups">
+                <h3>Existing Groups</h3>
+
+                {% for group in groups %}
+                    <div class="group-chip">
+                        {{ group.name }}
+                    </div>
+                {% empty %}
+                    <p>No groups available.</p>
+                {% endfor %}
+            </div>
+        </aside>
+
+    </div>
+</div>
+{% endblock %}

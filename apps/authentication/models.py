@@ -1,6 +1,10 @@
+# Author: Akil Hossain
+# Student ID: 20270054
+
 from django.db import models
 from django.contrib.auth.models import User
 
+#Mapping to the existing UserProfile table inside sqlite3 db
 class UserProfile(models.Model):
     user = models.OneToOneField(
         User,
@@ -9,8 +13,8 @@ class UserProfile(models.Model):
         primary_key=True
     )
 
-    dob = models.DateField(db_column='dob')
-    phone= models.CharField(max_length=20, db_column='phone_number')
+    dob = models.DateField(db_column='dob', blank=True, null=True)
+    phone= models.CharField(max_length=20, db_column='phone_number', blank=True, null=True)
     address = models.CharField( db_column='address', blank=True,null=True)
     profile_picture = models.TextField(db_column='profile_picture_url',blank=True,null=True)
     bio = models.TextField(db_column='bio', blank=True,null=True)
@@ -34,10 +38,7 @@ class UserProfile(models.Model):
 
     class Meta:
         db_table = 'UserProfile'
-        managed = False
+        managed = True
 
     def __str__(self):
         return self.user.username
-
-
-

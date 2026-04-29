@@ -1,3 +1,4 @@
+<!-- Author: Akil Hossain | Student ID: 20270054 -->
 {% extends "core/base_management.html" %}
 {% load static %}
 
@@ -43,9 +44,9 @@
         <div class="page-sub" style="margin-top:4px;">Core modules for admin operations.</div>
 
         <div class="action-strip">
-            <a class="action blue" href="#">
-                <p class="a-title">Teams</p>
-                <p class="a-sub">Search, view, edit teams</p>
+            <a href="{% url 'admin:auth_user_add' %}" class="action blue">
+                <p class="a-title">Users</p>
+                <p class="a-sub">Add, view, and manage users</p>
             </a>
 
             <a class="action deep" href="#">
@@ -53,12 +54,12 @@
                 <p class="a-sub">Network view, structure</p>
             </a>
 
-            <a class="action sky" href="#">
+            <a class="action sky" href="{% url 'admin_report' %}">
                 <p class="a-title">Reports</p>
                 <p class="a-sub">Export and analytics overview</p>
             </a>
 
-            <a class="action sky" href="#">
+            <a class="action sky" href="{% url 'user_management' %}">
                 <p class="a-title">Access Control</p>
                 <p class="a-sub">Quick Navigation to Access Management</p>
             </a>

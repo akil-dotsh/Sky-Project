@@ -1,4 +1,16 @@
 # SKY Project
+## Demo Login Credentials
+
+The following dummy accounts can be used by the tutor to test the system.
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | donaldtrump@sky.com | Test@1324 |
+| Department Head | depthead@sky.com | Test@1324 |
+| Team Leader | teamleader@sky.com | Test@1324 |
+| Developer | developer@sky.com | Test@1324 |
+
+These accounts are for coursework testing and demonstration purposes only.
 
 ## 🚧 Work in Progress
 

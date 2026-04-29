@@ -1,7 +1,15 @@
-/* ============================================================
-   Schedule page — matches high-fidelity mockup
-   Soft blue gradient background, glassy cards, cyan CTA.
-   ============================================================ */
+/* =====================================================================
+   File:        static/css/schedule/schedule.css
+   Author:      Ryan Thompson (W1789088)
+   Module:      5COSC021W — Software Development Group Project
+   Description: Stylesheet for the schedule page. Implements the
+                high-fidelity mockup — soft blue gradient background,
+                glassy cards, cyan CTA, monthly/weekly grids, agenda
+                tiles, the Schedule-Meeting modal and the participant
+                chips. All selectors are namespaced with the .sched-
+                prefix to avoid clashes with other apps' styles.
+   Co-authors:  None.
+   ===================================================================== */
 
 :root {
   --sch-bg-a: #e8f2fb;

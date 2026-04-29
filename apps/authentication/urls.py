@@ -1,12 +1,15 @@
+# Author: Akil Hossain
+# Student ID: 20270054
 from django.urls import  path
 from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
 from . import views
 
+#Defining the path for each page related to authentication
 
 urlpatterns=[
-    path('admin/', views.admin_login, name='admin_login'),
-    path('dev/',views.dev_login, name='dev_login'),
+    path('management/', views.admin_login, name='admin_login'),
+    path('',views.dev_login, name='dev_login'),
     path('reg/', views.user_register, name='register'),
     path('reset/', views.forgot_password, name='forgot_password'),
     path(

@@ -1,4 +1,14 @@
-{% extends "core/base_staff.html" %}
+{# ==================================================================== #}
+{# File:        apps/schedule/templates/schedule/_base_schedule.html    #}
+{# Author:      Ryan Thompson (W1789088)                                 #}
+{# Module:      5COSC021W - Software Development Group Project           #}
+{# Description: Shared shell for every schedule page. Renders the hero   #}
+{#              bar, view tabs (Monthly / Weekly / Agenda), the Upcoming #}
+{#              Schedule sidebar and the Schedule Meeting modal. Child   #}
+{#              templates fill the schedule_body block placeholder.      #}
+{# Co-authors:  None (extends core/base_staff.html, owned by the group). #}
+{# ==================================================================== #}
+{% extends base_template|default:"core/base_staff.html" %}
 {% load static %}
 
 {% block title %}Schedule{% endblock %}

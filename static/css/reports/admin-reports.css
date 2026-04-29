@@ -1,4 +1,4 @@
-/* Helpers */
+/* Author: Akil Hossain | Student ID: 20270054 */
 .d-none{ display:none !important; }
 
 /* Head row inside cards */
@@ -167,7 +167,6 @@
   transform: translateX(22px);
 }
 
-/* Table */
 /* Table */
 .table-wrap{
   overflow-x:auto;
