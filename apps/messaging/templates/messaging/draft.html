@@ -3,23 +3,16 @@
 
 {% block content %}
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Drafts</title>
-    <link rel="stylesheet" href="{% static 'css/messaging/message.css' %}">
-</head>
+<link rel="stylesheet" href="{% static 'css/messaging/message.css' %}">
 
-<body>
-
-<div class="island"> <!-- match your CSS -->
+<div class="island">
     <h3>📬 Messaging</h3>
 
     <a href="{% url 'messaging:messaging' %}">✉️ New Message</a>
     <a href="{% url 'messaging:inbox' %}">📥 Inbox</a>
     <a href="{% url 'messaging:draft' %}" class="active">📝 Drafts</a>
     <a href="{% url 'messaging:sent' %}">📤 Sent</a>
-</div> 
+</div>
 
 <div class="content">
 
@@ -27,26 +20,47 @@
         <h2>Drafts</h2>
 
         <div class="draft-container">
+
             {% for message in messages %}
-                <a href="{% url 'messaging:message_detail' message.message_id %}" class="draft-card">
-                    
-            
-                    <div class="sender">
-                     To: {{ message.recipient }}
-                    </div>
 
-                    <div class="subject">
-                      {{ message.subject }}
-                    </div>
+                <div class="draft-card">
 
-                    <div class="time">
-                        {{ message.sent_at }}
-                    </div>
+                    <a href="{% url 'messaging:detail' message.pk %}" style="display: contents;">
 
-                </a>
+                        <div class="sender">
+                            To: {{ message.recipient }}
+                        </div>
+
+                        <div class="subject">
+                            {{ message.subject }}
+                        </div>
+
+                        <div class="time">
+                            {{ message.sent_at }}
+                        </div>
+
+                    </a>
+
+                    <form method="post"
+                          action="{% url 'messaging:delete_draft' message.message_id %}"
+                          style="display:inline;">
+
+                        {% csrf_token %}
+
+                        <button type="submit"
+                                class="delete-btn"
+                                onclick="return confirm('Delete this draft?')">
+                            🗑
+                        </button>
+
+                    </form>
+
+                </div>
 
             {% empty %}
+
                 <div class="empty">No messages</div>
+
             {% endfor %}
 
         </div>
@@ -55,7 +69,6 @@
 
 </div>
 
-</body>
-</html>
+
 
 {% endblock %}

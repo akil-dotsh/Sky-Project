@@ -28,7 +28,7 @@
 
         <div class="message-list">
          {% for message in messages %}
-           <a href="{% url 'messaging:message_detail' message.message_id %}" class="message-item">
+            <a href="{% url 'messaging:detail' message.pk %}" class="message-item">
             
                <div class="sender">
                     To: {{ message.recipient }}

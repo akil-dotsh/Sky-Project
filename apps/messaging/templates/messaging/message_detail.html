@@ -1,116 +1,15 @@
+{% extends "core/base_staff.html" %}
+{% load static %}
+
+{% block content %}
+
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>Message Detail</title>
+    <link rel="stylesheet" href="{% static 'css/messaging/message.css' %}">
 
-    <style>
-        body {
-            margin: 0;
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: #f5f7fb;
-            color: #1f2937;
-        }
-
-        /* Layout */
-        .layout {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar (Sky-style clean panel) */
-        .sidebar {
-            width: 240px;
-            background: #0f172a;
-            color: white;
-            padding: 20px;
-        }
-
-        .sidebar h3 {
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-
-        .sidebar a {
-            display: block;
-            padding: 10px 12px;
-            margin-bottom: 8px;
-            text-decoration: none;
-            color: #cbd5e1;
-            border-radius: 8px;
-            transition: 0.2s;
-        }
-
-        .sidebar a:hover {
-            background: #1e293b;
-            color: white;
-        }
-
-        /* Content */
-        .content {
-            flex: 1;
-            padding: 40px;
-        }
-
-        .page-title {
-            font-size: 22px;
-            margin-bottom: 20px;
-        }
-
-        /* Message Card */
-        .message-box {
-            background: white;
-            border-radius: 14px;
-            padding: 25px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.06);
-            max-width: 800px;
-        }
-
-        .message-box h3 {
-            margin-top: 0;
-            font-size: 20px;
-        }
-
-        /* Meta info */
-        .meta {
-            display: grid;
-            gap: 6px;
-            margin-top: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #e5e7eb;
-            font-size: 14px;
-            color: #6b7280;
-        }
-
-        .meta strong {
-            color: #111827;
-        }
-
-        /* Message body */
-        .body {
-            margin-top: 20px;
-            line-height: 1.7;
-            font-size: 15px;
-            color: #374151;
-            white-space: pre-line;
-        }
-
-        /* Back button */
-        .back {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 14px;
-            background: #2563eb;
-            color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: 0.2s;
-        }
-
-        .back:hover {
-            background: #1d4ed8;
-        }
-    </style>
 </head>
 
 <body>
@@ -153,4 +52,12 @@
 </div>
 
 </body>
+
+<form method="post" action="{% url 'messaging:delete' message.pk %}">
+    {% csrf_token %}
+    <button type="submit" class="delete-btn">🗑 Delete</button>
+</form>
+
 </html>
+
+{% endblock %}
