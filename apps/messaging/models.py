@@ -66,7 +66,7 @@ class Message(models.Model):
         default='Sent'
     )
 
-    is_draft = models.BooleanField(default=False)  # 👈 ADD HERE
+    is_draft = models.BooleanField(default=False)
 
     attachment = models.FileField(
         upload_to='attachments/',
