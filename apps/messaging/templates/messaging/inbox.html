@@ -32,7 +32,7 @@
         <h2>Inbox</h2>
 
         <div class="message-list">
-            {% for message in messages %}
+            {% for message in inbox_messages %}
                 <a href="{% url 'messaging:message_detail' message.message_id %}" 
                    class="message-item {% if not message.read_at %}unread{% endif %}">
 
