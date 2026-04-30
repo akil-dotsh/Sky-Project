@@ -28,6 +28,7 @@ urlpatterns = [
     path('core/', include('apps.core.urls')),
     path('report/', include('apps.reports.urls')),
     path('organizations/', include('apps.organizations.urls')),
+    path('messaging/', include('apps.messaging.urls')),
 
 ]
 
