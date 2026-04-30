@@ -27,7 +27,7 @@
         <h2>Sent</h2>
 
         <div class="message-list">
-         {% for message in messages %}
+         {% for message in sent_messages %}
             <a href="{% url 'messaging:detail' message.pk %}" class="message-item">
             
                <div class="sender">
