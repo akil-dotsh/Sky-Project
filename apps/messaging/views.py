@@ -4,6 +4,7 @@ from django.utils import timezone
 from .models import Message
 from apps.teams.models import Team
 from django.http import JsonResponse
+from django.contrib import messages
 
 def get_dev_user():
     return User.objects.filter(username="dev").first()
@@ -18,29 +19,30 @@ def inbox(request):
         is_draft=False
     ) if user else Message.objects.none()
 
-    return render(request, 'messaging/inbox.html', {'messages': messages})
+    return render(request, 'messaging/inbox.html', {'inbox_messages': messages})
 
 
-#sends, and drafts massages
 def messaging(request):
-
     sender = request.user if request.user.is_authenticated else get_dev_user()
 
     if request.method == "POST":
 
-        subject = request.POST.get("subject", "")
-        body = request.POST.get("body", "")
+        subject = request.POST.get("subject", "").strip()
+        body = request.POST.get("body", "").strip()
         action = request.POST.get("action")
         attachment = request.FILES.get("attachment")
+
+        recipient_username = request.POST.get("recipient", "").strip()
+        team_name = request.POST.get("teams", "").strip()
 
         is_draft = (action == "draft")
         status = "Draft" if is_draft else "Sent"
         sent_time = None if is_draft else timezone.now()
 
-        recipient_username = request.POST.get("recipient")
-        team_name = request.POST.get("teams")
-        #makes the massage to send
+        messages_created = 0
+
         def create_message(recipient, recipient_type):
+            nonlocal messages_created
             Message.objects.create(
                 sender=sender,
                 recipient=recipient,
@@ -52,26 +54,47 @@ def messaging(request):
                 status=status,
                 sent_at=sent_time
             )
+            messages_created += 1
 
         if recipient_username:
-
             user = User.objects.filter(email=recipient_username).first() or \
-                   User.objects.filter(username=recipient_username).first()
+                User.objects.filter(username=recipient_username).first()
 
             if user:
                 create_message(user, "Individual")
+            else:
+                # 👇 store as plain text instead
+                Message.objects.create(
+                    sender=sender,
+                    recipient=None,
+                    recipient_type="External",
+                    recipient_text=recipient_username,
+                    subject=subject,
+                    body=body,
+                    attachment=attachment,
+                    is_draft=is_draft,
+                    status=status,
+                    sent_at=sent_time
+                )
 
-        elif team_name:
-
+        if team_name:
             team = Team.objects.filter(name=team_name).first()
 
             if team:
                 for member in team.members.all():
                     create_message(member, "Team")
+            else:
+                messages.error(request, "Team not found")
+
+        if messages_created == 0:
+            messages.error(request, "No message was sent")
+            return redirect("messaging:messaging")
 
         if is_draft:
+            messages.success(request, "Draft saved")
             return redirect("messaging:draft")
 
+        messages.success(request, "Message sent")
         return redirect("messaging:sent")
 
     return render(request, "messaging/messaging.html")
@@ -86,7 +109,7 @@ def sent(request):
         is_draft=False
     ).order_by('-sent_at')
 
-    return render(request, 'messaging/sent.html', {'messages': messages})
+    return render(request, 'messaging/sent.html', {'sent_messages': messages})
 
 #list of draft massages
 def draft(request):
@@ -136,7 +159,7 @@ def draft(request):
         is_draft=True
     ).order_by('-message_id')
 
-    return render(request, 'messaging/draft.html', {'messages': messages})
+    return render(request, 'messaging/draft.html', {'draft_messages': messages})
 
 
 #the massages themselves and ther details.
@@ -153,7 +176,7 @@ def message_detail(request, pk):
             message.status = 'Read'
             message.save()
 
-    return render(request, 'messaging/message_detail.html', {'message': message})
+    return render(request, 'messaging/message_detail.html', {'draft_message': message})
 
 
 #auto saves drafts
